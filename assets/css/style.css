@@ -1,5 +1,5 @@
 /* =========================================================
-   TITIK FIKSI — Bright Glass Author Website
+   TITIK FIKSI — Bright Glass Author Website (FIXED BUTTONS)
    File: assets/css/style.css
    ========================================================= */
 
@@ -11,228 +11,79 @@ img { max-width: 100%; display: block; }
   --radius-xl: 22px;
   --radius-lg: 18px;
   --radius-md: 14px;
-
   --shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.08);
   --shadow-card: 0 10px 24px rgba(16, 24, 40, 0.08);
-
   --blur: 16px;
   --container: 1120px;
   --transition: 180ms ease;
-
+  
   /* fallback */
-  --bg-1: #f6f7ff;
-  --bg-2: #eef3ff;
-  --bg-3: #ffffff;
-
-  --text-1: #0f172a;
-  --text-2: #334155;
-  --muted: #64748b;
-
+  --bg-1: #f6f7ff; --bg-2: #eef3ff; --bg-3: #ffffff;
+  --text-1: #0f172a; --text-2: #334155; --muted: #64748b;
   --glass: rgba(255, 255, 255, 0.55);
   --glass-strong: rgba(255, 255, 255, 0.75);
   --border: rgba(15, 23, 42, 0.10);
-
-  --brand: #3b82f6;
-  --brand-2: #8b5cf6;
-  --link: var(--brand);
+  --brand: #3b82f6; --brand-2: #8b5cf6; --link: var(--brand);
 }
 
 body {
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: var(--text-1);
-
   background:
     radial-gradient(1000px 700px at 10% 0%, var(--bg-2), transparent 60%),
     radial-gradient(900px 600px at 90% 10%, rgba(139, 92, 246, 0.18), transparent 55%),
     linear-gradient(180deg, var(--bg-1), var(--bg-3));
-
   min-height: 100vh;
 }
 
-.container {
-  width: 100%;
-  max-width: var(--container);
-  margin: 0 auto;
-  padding: 0 18px;
-}
-
+.container { width: 100%; max-width: var(--container); margin: 0 auto; padding: 0 18px; }
 .section { padding: 34px 0; }
 
 /* Glass */
 .glass-panel {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
 }
-
 .glass-card {
-  background: var(--glass-strong);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-card);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
+  background: var(--glass-strong); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
 }
 
 /* Navbar */
-.navbar-wrap {
-  position: sticky;
-  top: 14px;
-  z-index: 99;
-  padding: 10px 0;
-}
+.navbar-wrap { position: sticky; top: 14px; z-index: 99; padding: 10px 0; }
+.navbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; }
 
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 14px 16px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: var(--text-1);
-}
-
-.brand-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.75);
-  overflow: hidden;
-}
-
-.brand-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-1); }
+.brand-logo { width: 40px; height: 40px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.75); overflow: hidden; }
+.brand-logo img { width: 100%; height: 100%; object-fit: cover; }
 .brand-title { line-height: 1.1; }
 .brand-title strong { font-size: 14px; }
 .brand-title span { font-size: 12px; color: var(--muted); }
 
-.nav-links {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: var(--text-2);
-  padding: 10px 12px;
-  border-radius: 12px;
-  transition: var(--transition);
-  border: 1px solid transparent;
-}
-
-.nav-links a:hover {
-  background: rgba(255, 255, 255, 0.65);
-  border-color: var(--border);
-}
+.nav-links { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.nav-links a { text-decoration: none; color: var(--text-2); padding: 10px 12px; border-radius: 12px; transition: var(--transition); border: 1px solid transparent; }
+.nav-links a:hover, .nav-links a.active { background: rgba(255, 255, 255, 0.65); border-color: var(--border); }
 
 .nav-actions { display: flex; gap: 10px; align-items: center; }
-
-/* Theme button */
-.theme-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.70);
-  cursor: pointer;
-  color: var(--text-2);
-  transition: var(--transition);
-  user-select: none;
-  font-size: 13px;
-}
-
+.theme-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.70); cursor: pointer; color: var(--text-2); transition: var(--transition); user-select: none; font-size: 13px; }
 .theme-btn:hover { transform: translateY(-1px); }
-
-.theme-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 100px;
-  background: linear-gradient(45deg, var(--brand), var(--brand-2));
-}
+.theme-dot { width: 10px; height: 10px; border-radius: 100px; background: linear-gradient(45deg, var(--brand), var(--brand-2)); }
 
 /* Hero */
 .hero { padding: 34px 0 12px; }
-
-.hero-inner {
-  display: grid;
-  grid-template-columns: 1.25fr 0.75fr;
-  gap: 18px;
-  padding: 22px;
-}
-
-.hero h1 {
-  margin: 0;
-  font-size: clamp(28px, 4vw, 44px);
-  letter-spacing: -0.8px;
-}
-
-.hero-subtitle {
-  margin-top: 10px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.hero p {
-  margin: 12px 0 0;
-  font-size: 15px;
-  color: var(--text-2);
-  line-height: 1.6;
-}
-
-.hero-cta {
-  margin-top: 16px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
+.hero-inner { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 18px; padding: 22px; }
+.hero h1 { margin: 0; font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.8px; }
+.hero-subtitle { margin-top: 10px; color: var(--muted); font-size: 14px; }
+.hero p { margin: 12px 0 0; font-size: 15px; color: var(--text-2); line-height: 1.6; }
+.hero-cta { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; }
 
 /* Buttons */
-.btn {
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.70);
-  padding: 11px 14px;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: var(--transition);
-  text-decoration: none;
-  color: var(--text-1);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 13px;
-}
-
+.btn { border: 1px solid var(--border); background: rgba(255, 255, 255, 0.70); padding: 11px 14px; border-radius: 14px; cursor: pointer; transition: var(--transition); text-decoration: none; color: var(--text-1); display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; }
 .btn:hover { transform: translateY(-1px); }
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--brand), var(--brand-2));
-  border-color: rgba(255, 255, 255, 0.3);
-  color: white;
-}
-
-.btn-soft {
-  background: rgba(255, 255, 255, 0.70);
-  color: var(--text-1);
-}
+.btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); border-color: rgba(255, 255, 255, 0.3); color: white; }
+.btn-soft { background: rgba(255, 255, 255, 0.70); color: var(--text-1); }
 
 /* Side cards */
 .hero-side { display: grid; gap: 12px; }
@@ -240,103 +91,35 @@ body {
 .mini-card-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
 .mini-card-desc { color: var(--muted); font-size: 13px; line-height: 1.5; }
 
-/* Platform buttons */
-.platform-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
-}
-
+/* ✅ PERBAIKAN: Platform buttons (DULU DISPLAY NONE, SEKARANG DITAMPILKAN) */
+.platform-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
 .btn-platform {
-  display: none;
-  text-decoration: none;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.70);
-  color: var(--text-2);
-  transition: var(--transition);
-  font-size: 13px;
+  display: inline-flex; /* Diubah dari none agar tampil */
+  align-items: center; gap: 6px;
+  text-decoration: none; padding: 10px 12px; border-radius: 14px;
+  border: 1px solid var(--border); background: rgba(255, 255, 255, 0.70);
+  color: var(--text-2); transition: var(--transition); font-size: 13px;
 }
-
-.btn-platform:hover { transform: translateY(-1px); }
-
-.platform-note {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 8px;
-}
+.btn-platform:hover { transform: translateY(-1px); border-color: var(--brand); }
+.platform-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
 /* Titles */
-.section-title {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
+.section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .section-title h2 { margin: 0; font-size: 18px; }
 .section-title p { margin: 0; font-size: 13px; color: var(--muted); }
 
 /* Cards grid */
-.grid-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
+.grid-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
 /* Work card */
 .work-card { padding: 14px; overflow: hidden; }
-.work-cover {
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.60);
-  height: 180px;
-}
-
+.work-cover { border-radius: 18px; overflow: hidden; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.60); height: 180px; }
 .work-cover img { width: 100%; height: 100%; object-fit: cover; }
-
-.work-meta {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.badge {
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.70);
-  font-size: 12px;
-  color: var(--text-2);
-}
-
-.work-title {
-  margin: 10px 0 0;
-  font-weight: 800;
-  letter-spacing: -0.2px;
-  font-size: 15px;
-}
-
-.work-desc {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.55;
-  min-height: 56px;
-}
-
-.work-actions {
-  margin-top: 12px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+.work-meta { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.badge { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.70); font-size: 12px; color: var(--text-2); }
+.work-title { margin: 10px 0 0; font-weight: 800; letter-spacing: -0.2px; font-size: 15px; }
+.work-desc { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; min-height: 56px; }
+.work-actions { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* Writing card */
 .writing-card { padding: 14px; }
@@ -345,191 +128,41 @@ body {
 .writing-body { margin-top: 10px; font-size: 13px; color: var(--text-2); line-height: 1.6; }
 
 /* Social */
-.social-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-
+.social-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 .social-icon {
-  display: none;
-  text-decoration: none;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.70);
-  color: var(--text-2);
-  transition: var(--transition);
-  font-size: 13px;
+  display: inline-flex; /* Diubah dari none agar tampil */
+  align-items: center; gap: 6px;
+  text-decoration: none; padding: 10px 12px; border-radius: 14px;
+  border: 1px solid var(--border); background: rgba(255, 255, 255, 0.70);
+  color: var(--text-2); transition: var(--transition); font-size: 13px;
 }
-
 .social-icon:hover { transform: translateY(-1px); }
 
 /* Footer */
 .footer { padding: 22px 0 40px; color: var(--muted); font-size: 13px; }
-
-.footer-inner {
-  padding: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
+.footer-inner { padding: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .footer a { color: var(--link); text-decoration: none; }
-
-/* =========================================================
-   ✅ READER MODE — PREMIUM (UNTUK chapter.html)
-   ========================================================= */
-
-/* kotak bacaan dibikin lebih sempit agar nyaman dibaca */
-#chapter-box {
-  max-width: 860px;
-  margin: 0 auto;
-}
-
-/* judul bab lebih "novel" */
-#chapter-title {
-  letter-spacing: -0.4px;
-}
-
-/* isi cerita (paragraf) */
-#chapter-content {
-  font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-  font-size: 17px;
-  line-height: 2;
-  color: var(--text-2);
-}
-
-/* paragraf dibuat napas */
-#chapter-content p {
-  margin: 0 0 14px;
-}
-
-/* blok quote kalau suatu saat Anda pakai */
-#chapter-content blockquote {
-  margin: 14px 0;
-  padding: 12px 14px;
-  border-left: 4px solid rgba(59,130,246,0.45);
-  background: rgba(255,255,255,0.55);
-  border-radius: 14px;
-}
-
-/* tombol navigasi bab biar terlihat premium */
-#btn-prev, #btn-next, #btn-back-novel {
-  font-weight: 700;
-}
-
-/* daftar bab di novel.html dibuat lebih rapi */
-#chapters-list .glass-card {
-  transition: var(--transition);
-}
-
-#chapters-list .glass-card:hover {
-  transform: translateY(-1px);
-}
-
-/* responsive reader */
-@media (max-width: 620px) {
-  #chapter-box {
-    max-width: 100%;
-  }
-
-  #chapter-content {
-    font-size: 16px;
-    line-height: 1.95;
-  }
-}
 
 /* Responsive */
 @media (max-width: 980px) {
   .hero-inner { grid-template-columns: 1fr; }
   .grid-cards { grid-template-columns: repeat(2, 1fr); }
 }
-
 @media (max-width: 620px) {
   .grid-cards { grid-template-columns: 1fr; }
   .nav-links { display: none; }
 }
-/* Tambahan untuk Tampilan Novel Profesional */
-hr.scene-break {
-  border: 0;
-  height: 1px;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
-  margin: 40px 0;
-}
 
-blockquote {
-  border-left: 4px solid var(--brand);
-  padding-left: 16px;
-  margin: 20px 0;
-  font-style: italic;
-  color: var(--text-2);
-  background: rgba(var(--brand-rgb), 0.05);
-  padding: 10px 16px;
-  border-radius: 0 8px 8px 0;
+/* KARTU NOVEL POPUP (Efek Timbul & Bersinar) */
+.card-work { display: flex; flex-direction: column; padding: 12px; text-decoration: none; color: var(--text-1); border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; background: rgba(255, 255, 255, 0.6); }
+.card-work:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); border-color: var(--brand); background: #fff; z-index: 10; }
+.card-work img { transition: transform 0.5s ease; }
+.card-work:hover img { transform: scale(1.05); }
 
-}/* =========================================
-   FINAL POLISH: BUTTONS & CARDS EFFECTS
-   ========================================= */
-
-/* 1. KARTU NOVEL POPUP (Efek Timbul & Bersinar) */
-.card-work {
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-  text-decoration: none;
-  color: var(--text-1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Efek membal */
-  position: relative;
-  background: rgba(255, 255, 255, 0.6);
-}
-
-.card-work:hover {
-  transform: translateY(-10px) scale(1.02); /* Naik ke atas */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); /* Bayangan lembut */
-  border-color: var(--brand); /* Garis tepi menyala */
-  background: #fff;
-  z-index: 10;
-}
-
-.card-work img {
-  transition: transform 0.5s ease;
-}
-
-.card-work:hover img {
-  transform: scale(1.05); /* Gambar zoom sedikit */
-}
-
-/* 2. SOSIAL MEDIA BERWARNA (Contact) */
-.social-btn {
-  border-width: 2px !important; /* Garis lebih tebal */
-  font-weight: 700 !important;
-  transition: 0.2s !important;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Instagram (Pink-Ungu) */
-.social-ig { border-color: #E1306C; color: #E1306C; }
-.social-ig:hover { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; border-color: transparent; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(225, 48, 108, 0.4); }
-
-/* Facebook (Biru) */
-.social-fb { border-color: #1877F2; color: #1877F2; }
-.social-fb:hover { background: #1877F2; color: white; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(24, 119, 242, 0.4); }
-
-/* Twitter/X (Hitam) */
-.social-tw { border-color: #000; color: #000; }
-.social-tw:hover { background: #000; color: white; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0, 0.4); }
-
-/* TikTok (Hitam Teal) */
-.social-tt { border-color: #000; color: #000; }
-.social-tt:hover { background: linear-gradient(45deg, #000 60%, #25F4EE); color: white; border-color: transparent; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0, 0.4); }
-
-/* YouTube (Merah) */
-.social-yt { border-color: #FF0000; color: #FF0000; }
-.social-yt:hover { background: #FF0000; color: white; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4); }
+/* SOSIAL MEDIA BERWARNA */
+.social-btn { border-width: 2px !important; font-weight: 700 !important; transition: 0.2s !important; display: inline-flex; align-items: center; gap: 8px; }
+.social-ig { border-color: #E1306C; color: #E1306C; } .social-ig:hover { background: #E1306C; color: white; transform: translateY(-3px); }
+.social-fb { border-color: #1877F2; color: #1877F2; } .social-fb:hover { background: #1877F2; color: white; transform: translateY(-3px); }
+.social-tw { border-color: #000; color: #000; } .social-tw:hover { background: #000; color: white; transform: translateY(-3px); }
+.social-tt { border-color: #000; color: #000; } .social-tt:hover { background: #000; color: white; transform: translateY(-3px); }
+.social-yt { border-color: #FF0000; color: #FF0000; } .social-yt:hover { background: #FF0000; color: white; transform: translateY(-3px); }
