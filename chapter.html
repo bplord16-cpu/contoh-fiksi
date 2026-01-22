@@ -9,13 +9,14 @@
   <link rel="stylesheet" href="assets/css/style.css" />
 
   <style>
-    /* 🔥 FIX MODE BACA: Sembunyikan Navbar & Bersihkan Tampilan 🔥 */
-    .navbar-wrap { display: none !important; } /* Menu atas hilang */
+    /* 🔥 FIX MODE BACA: Sembunyikan Navbar agar Full Screen 🔥 */
+    .navbar-wrap { display: none !important; } 
     
+    /* Area Baca Rapi & Nyaman */
     .read-area { font-size: 1.15rem; line-height: 2; max-width: 720px; margin: 0 auto; color: var(--text-1); text-align: justify; }
     .read-area p { margin-bottom: 24px; }
     
-    /* Tombol Kembali Kecil di Atas (Pengganti Navbar) */
+    /* Tombol Kembali (Melayang di Kiri Atas) */
     .back-nav {
       position: fixed; top: 15px; left: 15px; z-index: 100;
       width: 40px; height: 40px; border-radius: 50%;
@@ -26,13 +27,23 @@
     }
     .back-nav:hover { transform: scale(1.1); }
 
-    /* LINK BUTTONS */
-    .external-links-box { margin: 40px auto 20px; padding: 25px; border-radius: 16px; background: rgba(var(--brand-rgb), 0.05); border: 2px dashed var(--brand); text-align: center; max-width: 600px; }
+    /* LINK BUTTONS (Fix Warna: Menggunakan warna hardcoded aman) */
+    .external-links-box { 
+        margin: 40px auto 20px; 
+        padding: 25px; 
+        border-radius: 16px; 
+        background: rgba(59, 130, 246, 0.05); /* Aman dari eror variabel */
+        border: 2px dashed var(--brand); 
+        text-align: center; 
+        max-width: 600px; 
+    }
     .external-links-box p { font-weight: bold; margin-bottom: 16px; color: var(--text-2); }
+    
     .ext-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
     .btn-ext { padding: 12px 20px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 0.95rem; transition: transform 0.2s; color: white; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .btn-ext:hover { transform: translateY(-3px); filter: brightness(1.1); }
     
+    /* Warna Tombol Platform */
     .btn-kk { background: #E22B2D; } 
     .btn-wp { background: #FF6122; } 
     .btn-gn { background: #2D68C4; } 
