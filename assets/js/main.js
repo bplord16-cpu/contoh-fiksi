@@ -1,10 +1,9 @@
 /* =========================================================
-   TITIK FIKSI — Main Controller (FINAL FIX DETAIL LOADING)
-   Perbaikan: Prioritas Router untuk Detail Novel
+   TITIK FIKSI — Main Controller (Fixed Text & Links)
+   Perbaikan: Logika Paragraf, Hapus Sampah, & Tombol Link
    ========================================================= */
 
 const TitikFiksi = (() => {
-  // Path Absolute
   const PATHS = {
     settings: "/content/settings/settings_general.json",
     home: "/content/home/home.json",
@@ -15,13 +14,10 @@ const TitikFiksi = (() => {
 
   const Utils = {
     getQueryParam(param) { return new URLSearchParams(window.location.search).get(param); },
-    
     formatDate(dateString) {
       if (!dateString) return "";
       return new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
     },
-
-    // Anti-Cache Fetch
     async fetchJSON(path) {
       try {
         const timestamp = new Date().getTime(); 
@@ -29,30 +25,36 @@ const TitikFiksi = (() => {
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) return null;
         return await res.json();
-      } catch (e) {
-        console.error("Error:", e);
-        return null;
-      }
+      } catch (e) { return null; }
     },
-
     setText(id, text) {
       const el = document.getElementById(id);
       if (el) el.textContent = text;
     },
-
+    
+    // 🔥 PERBAIKAN UTAMA: LOGIKA TEKS RAPI 🔥
     renderMarkdown(text) {
       if (!text) return "";
-      return text
-        .replace(/\n---\n/g, '<hr class="scene-break">')
-        .replace(/\n\*\*\*\n/g, '<hr class="scene-break">')
-        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-        .replace(/\*(.*?)\*/g, '<i>$1</i>')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br>');
+      
+      // 1. Bersihkan karakter aneh jika ada
+      let clean = text.replace(/\\/g, ''); // Hapus tanda backslash (\)
+      
+      // 2. Deteksi Paragraf: Pisahkan berdasarkan Enter 2x
+      // Ini membuat teks tidak menumpuk dan rapi
+      return clean.split(/\n\s*\n/).map(para => {
+        if (!para.trim()) return "";
+        // Proses Bold/Italic dalam paragraf
+        let p = para
+          .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+          .replace(/\*(.*?)\*/g, '<i>$1</i>')
+          .replace(/__(.*?)__/g, '<u>$1</u>')
+          .replace(/\n/g, '<br>'); // Enter 1x jadi baris baru biasa
+        return `<p style="margin-bottom:18px; text-align:justify;">${p}</p>`;
+      }).join("");
     }
   };
 
-  /* --- 1. GLOBAL SETTINGS --- */
+  /* --- 1. GLOBAL --- */
   async function initGlobalSettings() {
     const settings = await Utils.fetchJSON(PATHS.settings);
     if (settings) {
@@ -67,197 +69,122 @@ const TitikFiksi = (() => {
     }
   }
 
-  /* --- 2. BERANDA --- */
+  /* --- 2. HOME --- */
   async function initHomePage() {
     const data = await Utils.fetchJSON(PATHS.home);
     if (!data || !data.hero) return;
-
     Utils.setText("hero-title", data.hero.title);
     Utils.setText("hero-subtitle", data.hero.subtitle);
     Utils.setText("hero-intro", data.hero.intro);
     
+    // Tampilkan Link Platform di Home (Jika ada)
+    const platContainer = document.querySelector(".platform-grid");
+    if (data.platforms && platContainer) {
+      let html = "";
+      const p = data.platforms;
+      if (p.wattpad) html += `<a href="${p.wattpad}" target="_blank" class="btn-platform">🟠 Wattpad</a>`;
+      if (p.karyakarsa) html += `<a href="${p.karyakarsa}" target="_blank" class="btn-platform">🎁 Karyakarsa</a>`;
+      if (p.goodnovel) html += `<a href="${p.goodnovel}" target="_blank" class="btn-platform">📘 GoodNovel</a>`;
+      if (p.fizzo) html += `<a href="${p.fizzo}" target="_blank" class="btn-platform">📗 Fizzo</a>`;
+      platContainer.innerHTML = html;
+    }
+
     const ytContainer = document.getElementById("hero-youtube");
     if (data.hero.youtube_embed && ytContainer) {
-      let url = data.hero.youtube_embed;
-      if (url.includes("watch?v=")) url = url.replace("watch?v=", "embed/");
-      if (url.includes("youtu.be/")) url = url.replace("youtu.be/", "www.youtube.com/embed/");
+      let url = data.hero.youtube_embed.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
       ytContainer.innerHTML = `<iframe src="${url}" title="YouTube" frameborder="0" allowfullscreen></iframe>`;
       ytContainer.style.display = "block";
     }
   }
 
-  /* --- 3. LIST NOVEL --- */
-  async function initWorksList() {
-    const container = document.getElementById("works-container");
-    if (!container) return;
-
-    container.innerHTML = '<div style="padding:20px; text-align:center;">⏳ Sedang memuat novel...</div>';
-    const data = await Utils.fetchJSON(PATHS.works);
-    
-    if (!data || !data.works || data.works.length === 0) {
-      container.innerHTML = '<div class="glass-panel" style="padding:20px; text-align:center;">Belum ada novel.</div>';
-      return;
-    }
-
-    container.innerHTML = "";
-    container.style.display = "grid";
-    container.style.gridTemplateColumns = "repeat(auto-fill, minmax(160px, 1fr))";
-    container.style.gap = "20px";
-
-    data.works.forEach(work => {
-      const card = document.createElement("a");
-      card.href = `novel.html?slug=${work.slug}`;
-      card.className = "glass-panel card-work";
-      
-      const coverImg = work.cover ? work.cover : 'assets/images/defaults/cover-default.jpg';
-
-      card.innerHTML = `
-        <div style="aspect-ratio:2/3; width:100%; border-radius:12px; overflow:hidden; margin-bottom:12px; background:#e2e8f0;">
-          <img src="${coverImg}" style="width:100%; height:100%; object-fit:cover;" alt="${work.title}" loading="lazy">
-        </div>
-        <h4 style="margin:0 0 6px; font-size:1rem; line-height:1.4; font-weight:700;">${work.title}</h4>
-        <div style="font-size:0.75rem; color:var(--muted); margin-top:auto;">
-           <span class="badge">${work.status || 'Ongoing'}</span>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  /* --- 4. LIST TULISAN --- */
-  async function initWritingsList() {
-    const container = document.getElementById("writings-container");
-    if (!container) return;
-    
-    container.innerHTML = '<div style="padding:20px; text-align:center;">⏳ Sedang memuat tulisan...</div>';
-    const data = await Utils.fetchJSON(PATHS.writings);
-    
-    if (!data || !data.writings || data.writings.length === 0) {
-      container.innerHTML = '<div class="glass-panel" style="padding:20px; text-align:center;">Belum ada tulisan.</div>';
-      return;
-    }
-    
-    container.innerHTML = "";
-    const sorted = data.writings.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    sorted.forEach(item => {
-      const row = document.createElement("div");
-      row.className = "glass-panel";
-      row.style.cssText = "margin-bottom:15px; padding:22px; border-left:4px solid var(--brand);";
-      
-      row.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span style="font-size:0.8rem; color:var(--brand); font-weight:bold;">${item.category || 'Artikel'}</span>
-          <span style="font-size:0.8rem; color:var(--muted);">${Utils.formatDate(item.date)}</span>
-        </div>
-        <h3 style="margin:0 0 10px; font-size:1.25rem;">${item.title}</h3>
-        <p style="font-size:0.95rem; line-height:1.7; color:var(--text-2); margin:0;">
-           ${item.content ? Utils.renderMarkdown(item.content) : '...'}
-        </p>
-      `;
-      container.appendChild(row);
-    });
-  }
-
-  /* --- 5. DETAIL NOVEL & BAB (LOGIKA DI FIX DISINI) --- */
+  /* --- 3. DETAIL NOVEL (Fix Sinopsis & Link) --- */
   async function initNovelDetail() {
     const slug = Utils.getQueryParam("slug");
-    // Debugging: Cek apakah fungsi ini jalan
-    console.log("Menjalankan Detail Novel untuk:", slug);
-    
     if (!slug) return;
 
-    Utils.setText("work-title", "Sedang memuat data...");
+    Utils.setText("work-title", "Memuat...");
     const data = await Utils.fetchJSON(PATHS.works);
-    
     const novel = data?.works?.find(w => w.slug === slug);
-    if (!novel) {
-        Utils.setText("work-title", "Novel Tidak Ditemukan");
-        Utils.setText("work-synopsis", "Cek URL Anda kembali.");
-        return;
-    }
+    if (!novel) return Utils.setText("work-title", "Novel Tidak Ditemukan");
 
-    document.title = `${novel.title} | Titik Fiksi`;
+    document.title = `${novel.title} | Detail`;
     Utils.setText("work-title", novel.title);
     Utils.setText("work-genre", `📌 ${novel.genre || 'Fiksi'}`);
     Utils.setText("work-status", `✅ ${novel.status || '-'}`);
-    Utils.setText("work-synopsis", novel.synopsis);
+    
+    // GUNAKAN RENDER MARKDOWN AGAR SINOPSIS RAPI
+    document.getElementById("work-synopsis").innerHTML = Utils.renderMarkdown(novel.synopsis);
     
     const imgEl = document.getElementById("work-cover-img");
     if (imgEl) imgEl.src = novel.cover || "assets/images/defaults/cover-default.jpg";
 
-    // --- CARI BAB ---
+    // LOAD BAB
     const listContainer = document.getElementById("chapters-list");
-    listContainer.innerHTML = '<div style="padding:10px; color:var(--muted);">Mengecek bab...</div>';
+    listContainer.innerHTML = '<div style="padding:10px;">Mengecek bab...</div>';
     
-    let chapterCount = 1;
-    let foundChapters = [];
-    let gapCount = 0; 
-    const MAX_GAP = 5;
-    const MAX_CHAPTERS = 300; 
-
-    while (chapterCount <= MAX_CHAPTERS && gapCount < MAX_GAP) {
+    let chapterCount = 1, foundChapters = [], gapCount = 0;
+    while (chapterCount <= 300 && gapCount < 5) {
       const code = String(chapterCount).padStart(2, '0');
-      const filename = `${slug}-${code}.json`;
-      const chapData = await Utils.fetchJSON(`${PATHS.chaptersDir}${filename}`);
-      
+      const chapData = await Utils.fetchJSON(`${PATHS.chaptersDir}${slug}-${code}.json`);
       if (chapData) {
         if (chapData.published !== false) foundChapters.push({ ...chapData, code });
         gapCount = 0; 
-      } else {
-        gapCount++; 
-      }
+      } else gapCount++;
       chapterCount++;
     }
 
     listContainer.innerHTML = "";
-    if (foundChapters.length === 0) {
-        listContainer.innerHTML = '<div class="glass-panel" style="padding:15px; text-align:center;">Belum ada bab.</div>';
-    } else {
+    if (foundChapters.length === 0) listContainer.innerHTML = '<div class="glass-panel" style="padding:15px; text-align:center;">Belum ada bab.</div>';
+    else {
       foundChapters.sort((a,b) => parseInt(a.code) - parseInt(b.code));
       foundChapters.forEach(chap => {
         const item = document.createElement("a");
         item.className = "chapter-item glass-panel";
         item.href = `chapter.html?novel=${slug}&chapter=${chap.code}`;
         item.style.marginBottom = "10px";
-        item.innerHTML = `
-            <div class="chap-num">#${parseInt(chap.code)}</div>
-            <div class="chap-info">
-                <strong>${chap.title}</strong>
-                <span>${Utils.formatDate(chap.date)}</span>
-            </div>
-        `;
+        item.innerHTML = `<div class="chap-num">#${parseInt(chap.code)}</div><div class="chap-info"><strong>${chap.title}</strong><span>${Utils.formatDate(chap.date)}</span></div>`;
         listContainer.appendChild(item);
       });
     }
   }
 
-  /* --- 6. BACA BAB --- */
+  /* --- 4. BACA BAB (FULL MODE) --- */
   async function initReadChapter() {
     window.scrollTo(0,0);
     const novelSlug = Utils.getQueryParam("novel");
     const chapCode = Utils.getQueryParam("chapter");
-    
     if (!novelSlug || !chapCode) return;
 
-    const filename = `${novelSlug}-${chapCode}.json`;
-    const data = await Utils.fetchJSON(`${PATHS.chaptersDir}${filename}`);
-    
+    const data = await Utils.fetchJSON(`${PATHS.chaptersDir}${novelSlug}-${chapCode}.json`);
     if (!data) {
         Utils.setText("chapter-title", "Bab Tidak Ditemukan");
-        document.getElementById("chapter-content").innerHTML = "<p>Bab belum tersedia.</p>";
         return;
     }
 
     document.title = `${data.title}`;
     Utils.setText("chapter-top", `CHAPTER ${parseInt(chapCode)}`);
     Utils.setText("chapter-title", data.title);
+    
+    // RENDER ISI CERITA DENGAN RAPI
     document.getElementById("chapter-content").innerHTML = Utils.renderMarkdown(data.content);
+
+    // RENDER TOMBOL LINK EKSTERNAL
+    const linkBox = document.getElementById("chapter-external-links");
+    if(linkBox && data.external_links) {
+        let html = "";
+        const l = data.external_links;
+        // Cek jika link ada isinya (lebih dari 1 huruf)
+        if(l.karyakarsa && l.karyakarsa.length > 1) html += `<a href="${l.karyakarsa}" target="_blank" class="btn-ext btn-kk">🎁 Karyakarsa</a>`;
+        if(l.wattpad && l.wattpad.length > 1) html += `<a href="${l.wattpad}" target="_blank" class="btn-ext btn-wp">🟠 Wattpad</a>`;
+        if(l.goodnovel && l.goodnovel.length > 1) html += `<a href="${l.goodnovel}" target="_blank" class="btn-ext btn-gn">📘 GoodNovel</a>`;
+        if(l.custom_url && l.custom_url.length > 1) html += `<a href="${l.custom_url}" target="_blank" class="btn-ext btn-custom">🔗 ${l.custom_text||'Link'}</a>`;
+        
+        linkBox.innerHTML = html ? `<div class="external-links-box"><p>Lanjut baca di:</p><div class="ext-buttons">${html}</div></div>` : "";
+    }
 
     const btnBack = document.getElementById("btn-back-novel");
     if(btnBack) btnBack.href = `novel.html?slug=${novelSlug}`;
 
-    // Navigasi Next/Prev
     const currentNum = parseInt(chapCode);
     const nextCode = String(currentNum + 1).padStart(2,'0');
     const prevCode = String(currentNum - 1).padStart(2,'0');
@@ -280,39 +207,819 @@ const TitikFiksi = (() => {
     }
   }
 
-  /* --- INIT CONTROLLER (ROUTER FIXED) --- */
+  /* --- 5. LIST NOVEL & TULISAN --- */
+  async function initWorksList() {
+    const container = document.getElementById("works-container");
+    if (!container) return;
+    container.innerHTML = '<div style="padding:20px; text-align:center;">⏳ Sedang memuat...</div>';
+    const data = await Utils.fetchJSON(PATHS.works);
+    if (!data || !data.works || data.works.length === 0) {
+      container.innerHTML = '<div class="glass-panel" style="padding:20px; text-align:center;">Belum ada novel.</div>'; return;
+    }
+    container.innerHTML = ""; container.style.display = "grid";
+    container.style.gridTemplateColumns = "repeat(auto-fill, minmax(160px, 1fr))"; container.style.gap = "20px";
+    data.works.forEach(work => {
+      const card = document.createElement("a"); card.href = `novel.html?slug=${work.slug}`; card.className = "glass-panel card-work";
+      const cover = work.cover || 'assets/images/defaults/cover-default.jpg';
+      card.innerHTML = `<div style="aspect-ratio:2/3; width:100%; border-radius:12px; overflow:hidden; margin-bottom:12px; background:#e2e8f0;"><img src="${cover}" style="width:100%; height:100%; object-fit:cover;" loading="lazy"></div><h4 style="margin:0 0 6px; font-size:1rem; line-height:1.4; font-weight:700;">${work.title}</h4><div style="font-size:0.75rem; color:var(--muted); margin-top:auto;"><span class="badge">${work.status || 'Ongoing'}</span></div>`;
+      container.appendChild(card);
+    });
+  }
+
+  async function initWritingsList() {
+    const container = document.getElementById("writings-container"); if (!container) return;
+    container.innerHTML = '<div>Memuat...</div>';
+    const data = await Utils.fetchJSON(PATHS.writings);
+    if (!data || !data.writings) return container.innerHTML = '<div>Kosong.</div>';
+    container.innerHTML = "";
+    data.writings.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+      const row = document.createElement("div"); row.className = "glass-panel"; row.style.cssText = "margin-bottom:15px; padding:22px; border-left:4px solid var(--brand);";
+      row.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:0.8rem; color:var(--brand); font-weight:bold;">${item.category || 'Artikel'}</span><span style="font-size:0.8rem; color:var(--muted);">${Utils.formatDate(item.date)}</span></div><h3 style="margin:0 0 10px; font-size:1.25rem;">${item.title}</h3><p style="font-size:0.95rem; line-height:1.7; color:var(--text-2); margin:0;">${item.content ? Utils.renderMarkdown(item.content) : '...'}</p>`;
+      container.appendChild(row);
+    });
+  }
+
+  /* --- ROUTER --- */
   function init() {
     initGlobalSettings();
-    
-    const path = window.location.pathname.toLowerCase(); 
+    const path = window.location.pathname.toLowerCase();
     const slug = Utils.getQueryParam("slug");
     const chapter = Utils.getQueryParam("chapter");
 
-    // URUTAN INI SANGAT PENTING (JANGAN DITUKAR)
+    if (chapter && Utils.getQueryParam("novel")) initReadChapter();/* =========================================================
+   TITIK FIKSI — Main Controller (Fixed Text & Links)
+   Perbaikan: Logika Paragraf, Hapus Sampah, & Tombol Link
+   ========================================================= */
+
+const TitikFiksi = (() => {
+  const PATHS = {
+    settings: "/content/settings/settings_general.json",
+    home: "/content/home/home.json",
+    works: "/content/works/works.json",
+    writings: "/content/writings/writings.json",
+    chaptersDir: "/content/chapters/" 
+  };
+
+  const Utils = {
+    getQueryParam(param) { return new URLSearchParams(window.location.search).get(param); },
+    formatDate(dateString) {
+      if (!dateString) return "";
+      return new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    },
+    async fetchJSON(path) {
+      try {
+        const timestamp = new Date().getTime(); 
+        const url = `${path}?v=${timestamp}`; 
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) { return null; }
+    },
+    setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    },
     
-    // 1. Cek Apakah ini Halaman BACA BAB? (Ada parameter 'novel' dan 'chapter')
-    if (chapter && Utils.getQueryParam("novel")) {
-        initReadChapter();
+    // 🔥 PERBAIKAN UTAMA: LOGIKA TEKS RAPI 🔥
+    renderMarkdown(text) {
+      if (!text) return "";
+      
+      // 1. Bersihkan karakter aneh jika ada
+      let clean = text.replace(/\\/g, ''); // Hapus tanda backslash (\)
+      
+      // 2. Deteksi Paragraf: Pisahkan berdasarkan Enter 2x
+      // Ini membuat teks tidak menumpuk dan rapi
+      return clean.split(/\n\s*\n/).map(para => {
+        if (!para.trim()) return "";
+        // Proses Bold/Italic dalam paragraf
+        let p = para
+          .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+          .replace(/\*(.*?)\*/g, '<i>$1</i>')
+          .replace(/__(.*?)__/g, '<u>$1</u>')
+          .replace(/\n/g, '<br>'); // Enter 1x jadi baris baru biasa
+        return `<p style="margin-bottom:18px; text-align:justify;">${p}</p>`;
+      }).join("");
     }
-    // 2. Cek Apakah ini Halaman DETAIL NOVEL? (Ada parameter 'slug')
-    else if (slug) {
-        initNovelDetail();
-    }
-    // 3. Cek Halaman List Novel (Jika URL mengandung 'works' atau 'novel' TAPI TIDAK ADA SLUG)
-    else if (path.includes("works") || path.includes("novel")) {
-        initWorksList();
-    }
-    // 4. Cek Halaman Tulisan
-    else if (path.includes("writings") || path.includes("tulisan")) {
-        initWritingsList();
-    }
-    // 5. Default ke Beranda
-    else if (path === "/" || path.includes("index")) {
-        initHomePage();
+  };
+
+  /* --- 1. GLOBAL --- */
+  async function initGlobalSettings() {
+    const settings = await Utils.fetchJSON(PATHS.settings);
+    if (settings) {
+      if (settings.brand_logo) document.querySelectorAll('img[data-brand="logo"]').forEach(img => img.src = settings.brand_logo);
+      if (settings.brand_favicon) {
+        let link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+        link.rel = 'icon'; link.href = settings.brand_favicon; document.head.appendChild(link);
+      }
+      if (settings.site_title && (location.pathname === '/' || location.pathname.includes('index'))) {
+          document.title = settings.site_title;
+      }
     }
   }
 
+  /* --- 2. HOME --- */
+  async function initHomePage() {
+    const data = await Utils.fetchJSON(PATHS.home);
+    if (!data || !data.hero) return;
+    Utils.setText("hero-title", data.hero.title);
+    Utils.setText("hero-subtitle", data.hero.subtitle);
+    Utils.setText("hero-intro", data.hero.intro);
+    
+    // Tampilkan Link Platform di Home (Jika ada)
+    const platContainer = document.querySelector(".platform-grid");
+    if (data.platforms && platContainer) {
+      let html = "";
+      const p = data.platforms;
+      if (p.wattpad) html += `<a href="${p.wattpad}" target="_blank" class="btn-platform">🟠 Wattpad</a>`;
+      if (p.karyakarsa) html += `<a href="${p.karyakarsa}" target="_blank" class="btn-platform">🎁 Karyakarsa</a>`;
+      if (p.goodnovel) html += `<a href="${p.goodnovel}" target="_blank" class="btn-platform">📘 GoodNovel</a>`;
+      if (p.fizzo) html += `<a href="${p.fizzo}" target="_blank" class="btn-platform">📗 Fizzo</a>`;
+      platContainer.innerHTML = html;
+    }
+
+    const ytContainer = document.getElementById("hero-youtube");
+    if (data.hero.youtube_embed && ytContainer) {
+      let url = data.hero.youtube_embed.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
+      ytContainer.innerHTML = `<iframe src="${url}" title="YouTube" frameborder="0" allowfullscreen></iframe>`;
+      ytContainer.style.display = "block";
+    }
+  }
+
+  /* --- 3. DETAIL NOVEL (Fix Sinopsis & Link) --- */
+  async function initNovelDetail() {
+    const slug = Utils.getQueryParam("slug");
+    if (!slug) return;
+
+    Utils.setText("work-title", "Memuat...");
+    const data = await Utils.fetchJSON(PATHS.works);
+    const novel = data?.works?.find(w => w.slug === slug);
+    if (!novel) return Utils.setText("work-title", "Novel Tidak Ditemukan");
+
+    document.title = `${novel.title} | Detail`;
+    Utils.setText("work-title", novel.title);
+    Utils.setText("work-genre", `📌 ${novel.genre || 'Fiksi'}`);
+    Utils.setText("work-status", `✅ ${novel.status || '-'}`);
+    
+    // GUNAKAN RENDER MARKDOWN AGAR SINOPSIS RAPI
+    document.getElementById("work-synopsis").innerHTML = Utils.renderMarkdown(novel.synopsis);
+    
+    const imgEl = document.getElementById("work-cover-img");
+    if (imgEl) imgEl.src = novel.cover || "assets/images/defaults/cover-default.jpg";
+
+    // LOAD BAB
+    const listContainer = document.getElementById("chapters-list");
+    listContainer.innerHTML = '<div style="padding:10px;">Mengecek bab...</div>';
+    
+    let chapterCount = 1, foundChapters = [], gapCount = 0;
+    while (chapterCount <= 300 && gapCount < 5) {
+      const code = String(chapterCount).padStart(2, '0');
+      const chapData = await Utils.fetchJSON(`${PATHS.chaptersDir}${slug}-${code}.json`);
+      if (chapData) {
+        if (chapData.published !== false) foundChapters.push({ ...chapData, code });
+        gapCount = 0; 
+      } else gapCount++;
+      chapterCount++;
+    }
+
+    listContainer.innerHTML = "";
+    if (foundChapters.length === 0) listContainer.innerHTML = '<div class="glass-panel" style="padding:15px; text-align:center;">Belum ada bab.</div>';
+    else {
+      foundChapters.sort((a,b) => parseInt(a.code) - parseInt(b.code));
+      foundChapters.forEach(chap => {
+        const item = document.createElement("a");
+        item.className = "chapter-item glass-panel";
+        item.href = `chapter.html?novel=${slug}&chapter=${chap.code}`;
+        item.style.marginBottom = "10px";
+        item.innerHTML = `<div class="chap-num">#${parseInt(chap.code)}</div><div class="chap-info"><strong>${chap.title}</strong><span>${Utils.formatDate(chap.date)}</span></div>`;
+        listContainer.appendChild(item);
+      });
+    }
+  }
+
+  /* --- 4. BACA BAB (FULL MODE) --- */
+  async function initReadChapter() {
+    window.scrollTo(0,0);
+    const novelSlug = Utils.getQueryParam("novel");
+    const chapCode = Utils.getQueryParam("chapter");
+    if (!novelSlug || !chapCode) return;
+
+    const data = await Utils.fetchJSON(`${PATHS.chaptersDir}${novelSlug}-${chapCode}.json`);
+    if (!data) {
+        Utils.setText("chapter-title", "Bab Tidak Ditemukan");
+        return;
+    }
+
+    document.title = `${data.title}`;
+    Utils.setText("chapter-top", `CHAPTER ${parseInt(chapCode)}`);
+    Utils.setText("chapter-title", data.title);
+    
+    // RENDER ISI CERITA DENGAN RAPI
+    document.getElementById("chapter-content").innerHTML = Utils.renderMarkdown(data.content);
+
+    // RENDER TOMBOL LINK EKSTERNAL
+    const linkBox = document.getElementById("chapter-external-links");
+    if(linkBox && data.external_links) {
+        let html = "";
+        const l = data.external_links;
+        // Cek jika link ada isinya (lebih dari 1 huruf)
+        if(l.karyakarsa && l.karyakarsa.length > 1) html += `<a href="${l.karyakarsa}" target="_blank" class="btn-ext btn-kk">🎁 Karyakarsa</a>`;
+        if(l.wattpad && l.wattpad.length > 1) html += `<a href="${l.wattpad}" target="_blank" class="btn-ext btn-wp">🟠 Wattpad</a>`;
+        if(l.goodnovel && l.goodnovel.length > 1) html += `<a href="${l.goodnovel}" target="_blank" class="btn-ext btn-gn">📘 GoodNovel</a>`;
+        if(l.custom_url && l.custom_url.length > 1) html += `<a href="${l.custom_url}" target="_blank" class="btn-ext btn-custom">🔗 ${l.custom_text||'Link'}</a>`;
+        
+        linkBox.innerHTML = html ? `<div class="external-links-box"><p>Lanjut baca di:</p><div class="ext-buttons">${html}</div></div>` : "";
+    }
+
+    const btnBack = document.getElementById("btn-back-novel");
+    if(btnBack) btnBack.href = `novel.html?slug=${novelSlug}`;
+
+    const currentNum = parseInt(chapCode);
+    const nextCode = String(currentNum + 1).padStart(2,'0');
+    const prevCode = String(currentNum - 1).padStart(2,'0');
+
+    const btnPrev = document.getElementById("btn-prev");
+    if(btnPrev) {
+        if(currentNum > 1) {
+            btnPrev.href = `chapter.html?novel=${novelSlug}&chapter=${prevCode}`;
+            btnPrev.style.display = "inline-flex";
+        } else btnPrev.style.display = "none";
+    }
+
+    const btnNext = document.getElementById("btn-next");
+    if(btnNext) {
+        const nextData = await Utils.fetchJSON(`${PATHS.chaptersDir}${novelSlug}-${nextCode}.json`);
+        if(nextData) {
+            btnNext.href = `chapter.html?novel=${novelSlug}&chapter=${nextCode}`;
+            btnNext.style.display = "inline-flex";
+        } else btnNext.style.display = "none";
+    }
+  }
+
+  /* --- 5. LIST NOVEL & TULISAN --- */
+  async function initWorksList() {
+    const container = document.getElementById("works-container");
+    if (!container) return;
+    container.innerHTML = '<div style="padding:20px; text-align:center;">⏳ Sedang memuat...</div>';
+    const data = await Utils.fetchJSON(PATHS.works);
+    if (!data || !data.works || data.works.length === 0) {
+      container.innerHTML = '<div class="glass-panel" style="padding:20px; text-align:center;">Belum ada novel.</div>'; return;
+    }
+    container.innerHTML = ""; container.style.display = "grid";
+    container.style.gridTemplateColumns = "repeat(auto-fill, minmax(160px, 1fr))"; container.style.gap = "20px";
+    data.works.forEach(work => {
+      const card = document.createElement("a"); card.href = `novel.html?slug=${work.slug}`; card.className = "glass-panel card-work";
+      const cover = work.cover || 'assets/images/defaults/cover-default.jpg';
+      card.innerHTML = `<div style="aspect-ratio:2/3; width:100%; border-radius:12px; overflow:hidden; margin-bottom:12px; background:#e2e8f0;"><img src="${cover}" style="width:100%; height:100%; object-fit:cover;" loading="lazy"></div><h4 style="margin:0 0 6px; font-size:1rem; line-height:1.4; font-weight:700;">${work.title}</h4><div style="font-size:0.75rem; color:var(--muted); margin-top:auto;"><span class="badge">${work.status || 'Ongoing'}</span></div>`;
+      container.appendChild(card);
+    });
+  }
+
+  async function initWritingsList() {
+    const container = document.getElementById("writings-container"); if (!container) return;
+    container.innerHTML = '<div>Memuat...</div>';
+    const data = await Utils.fetchJSON(PATHS.writings);
+    if (!data || !data.writings) return container.innerHTML = '<div>Kosong.</div>';
+    container.innerHTML = "";
+    data.writings.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+      const row = document.createElement("div"); row.className = "glass-panel"; row.style.cssText = "margin-bottom:15px; padding:22px; border-left:4px solid var(--brand);";
+      row.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:0.8rem; color:var(--brand); font-weight:bold;">${item.category || 'Artikel'}</span><span style="font-size:0.8rem; color:var(--muted);">${Utils.formatDate(item.date)}</span></div><h3 style="margin:0 0 10px; font-size:1.25rem;">${item.title}</h3><p style="font-size:0.95rem; line-height:1.7; color:var(--text-2); margin:0;">${item.content ? Utils.renderMarkdown(item.content) : '...'}</p>`;
+      container.appendChild(row);
+    });
+  }
+
+  /* --- ROUTER --- */
+  function init() {
+    initGlobalSettings();
+    const path = window.location.pathname.toLowerCase();
+    const slug = Utils.getQueryParam("slug");
+    const chapter = Utils.getQueryParam("chapter");
+
+    if (chapter && Utils.getQueryParam("novel")) initReadChapter();
+    else if (slug) initNovelDetail();/* =========================================================
+   TITIK FIKSI — Main Controller (Fixed Text & Links)
+   Perbaikan: Logika Paragraf, Hapus Sampah, & Tombol Link
+   ========================================================= */
+
+const TitikFiksi = (() => {
+  const PATHS = {
+    settings: "/content/settings/settings_general.json",
+    home: "/content/home/home.json",
+    works: "/content/works/works.json",
+    writings: "/content/writings/writings.json",
+    chaptersDir: "/content/chapters/" 
+  };
+
+  const Utils = {
+    getQueryParam(param) { return new URLSearchParams(window.location.search).get(param); },
+    formatDate(dateString) {
+      if (!dateString) return "";
+      return new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    },
+    async fetchJSON(path) {
+      try {
+        const timestamp = new Date().getTime(); 
+        const url = `${path}?v=${timestamp}`; 
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) { return null; }
+    },
+    setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    },
+    
+    // 🔥 PERBAIKAN UTAMA: LOGIKA TEKS RAPI 🔥
+    renderMarkdown(text) {
+      if (!text) return "";
+      
+      // 1. Bersihkan karakter aneh jika ada
+      let clean = text.replace(/\\/g, ''); // Hapus tanda backslash (\)
+      
+      // 2. Deteksi Paragraf: Pisahkan berdasarkan Enter 2x
+      // Ini membuat teks tidak menumpuk dan rapi
+      return clean.split(/\n\s*\n/).map(para => {
+        if (!para.trim()) return "";
+        // Proses Bold/Italic dalam paragraf
+        let p = para
+          .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+          .replace(/\*(.*?)\*/g, '<i>$1</i>')
+          .replace(/__(.*?)__/g, '<u>$1</u>')
+          .replace(/\n/g, '<br>'); // Enter 1x jadi baris baru biasa
+        return `<p style="margin-bottom:18px; text-align:justify;">${p}</p>`;
+      }).join("");
+    }
+  };
+
+  /* --- 1. GLOBAL --- */
+  async function initGlobalSettings() {
+    const settings = await Utils.fetchJSON(PATHS.settings);
+    if (settings) {
+      if (settings.brand_logo) document.querySelectorAll('img[data-brand="logo"]').forEach(img => img.src = settings.brand_logo);
+      if (settings.brand_favicon) {
+        let link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+        link.rel = 'icon'; link.href = settings.brand_favicon; document.head.appendChild(link);
+      }
+      if (settings.site_title && (location.pathname === '/' || location.pathname.includes('index'))) {
+          document.title = settings.site_title;
+      }
+    }
+  }
+
+  /* --- 2. HOME --- */
+  async function initHomePage() {
+    const data = await Utils.fetchJSON(PATHS.home);
+    if (!data || !data.hero) return;
+    Utils.setText("hero-title", data.hero.title);
+    Utils.setText("hero-subtitle", data.hero.subtitle);
+    Utils.setText("hero-intro", data.hero.intro);
+    
+    // Tampilkan Link Platform di Home (Jika ada)
+    const platContainer = document.querySelector(".platform-grid");
+    if (data.platforms && platContainer) {
+      let html = "";
+      const p = data.platforms;
+      if (p.wattpad) html += `<a href="${p.wattpad}" target="_blank" class="btn-platform">🟠 Wattpad</a>`;
+      if (p.karyakarsa) html += `<a href="${p.karyakarsa}" target="_blank" class="btn-platform">🎁 Karyakarsa</a>`;
+      if (p.goodnovel) html += `<a href="${p.goodnovel}" target="_blank" class="btn-platform">📘 GoodNovel</a>`;
+      if (p.fizzo) html += `<a href="${p.fizzo}" target="_blank" class="btn-platform">📗 Fizzo</a>`;
+      platContainer.innerHTML = html;
+    }
+
+    const ytContainer = document.getElementById("hero-youtube");
+    if (data.hero.youtube_embed && ytContainer) {
+      let url = data.hero.youtube_embed.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
+      ytContainer.innerHTML = `<iframe src="${url}" title="YouTube" frameborder="0" allowfullscreen></iframe>`;
+      ytContainer.style.display = "block";
+    }
+  }
+
+  /* --- 3. DETAIL NOVEL (Fix Sinopsis & Link) --- */
+  async function initNovelDetail() {
+    const slug = Utils.getQueryParam("slug");
+    if (!slug) return;
+
+    Utils.setText("work-title", "Memuat...");
+    const data = await Utils.fetchJSON(PATHS.works);
+    const novel = data?.works?.find(w => w.slug === slug);
+    if (!novel) return Utils.setText("work-title", "Novel Tidak Ditemukan");
+
+    document.title = `${novel.title} | Detail`;
+    Utils.setText("work-title", novel.title);
+    Utils.setText("work-genre", `📌 ${novel.genre || 'Fiksi'}`);
+    Utils.setText("work-status", `✅ ${novel.status || '-'}`);
+    
+    // GUNAKAN RENDER MARKDOWN AGAR SINOPSIS RAPI
+    document.getElementById("work-synopsis").innerHTML = Utils.renderMarkdown(novel.synopsis);
+    
+    const imgEl = document.getElementById("work-cover-img");
+    if (imgEl) imgEl.src = novel.cover || "assets/images/defaults/cover-default.jpg";
+
+    // LOAD BAB
+    const listContainer = document.getElementById("chapters-list");
+    listContainer.innerHTML = '<div style="padding:10px;">Mengecek bab...</div>';
+    
+    let chapterCount = 1, foundChapters = [], gapCount = 0;
+    while (chapterCount <= 300 && gapCount < 5) {
+      const code = String(chapterCount).padStart(2, '0');
+      const chapData = await Utils.fetchJSON(`${PATHS.chaptersDir}${slug}-${code}.json`);
+      if (chapData) {
+        if (chapData.published !== false) foundChapters.push({ ...chapData, code });
+        gapCount = 0; 
+      } else gapCount++;
+      chapterCount++;
+    }
+
+    listContainer.innerHTML = "";
+    if (foundChapters.length === 0) listContainer.innerHTML = '<div class="glass-panel" style="padding:15px; text-align:center;">Belum ada bab.</div>';
+    else {
+      foundChapters.sort((a,b) => parseInt(a.code) - parseInt(b.code));
+      foundChapters.forEach(chap => {
+        const item = document.createElement("a");
+        item.className = "chapter-item glass-panel";
+        item.href = `chapter.html?novel=${slug}&chapter=${chap.code}`;
+        item.style.marginBottom = "10px";
+        item.innerHTML = `<div class="chap-num">#${parseInt(chap.code)}</div><div class="chap-info"><strong>${chap.title}</strong><span>${Utils.formatDate(chap.date)}</span></div>`;
+        listContainer.appendChild(item);
+      });
+    }
+  }
+
+  /* --- 4. BACA BAB (FULL MODE) --- */
+  async function initReadChapter() {
+    window.scrollTo(0,0);
+    const novelSlug = Utils.getQueryParam("novel");
+    const chapCode = Utils.getQueryParam("chapter");
+    if (!novelSlug || !chapCode) return;
+
+    const data = await Utils.fetchJSON(`${PATHS.chaptersDir}${novelSlug}-${chapCode}.json`);
+    if (!data) {
+        Utils.setText("chapter-title", "Bab Tidak Ditemukan");
+        return;
+    }
+
+    document.title = `${data.title}`;
+    Utils.setText("chapter-top", `CHAPTER ${parseInt(chapCode)}`);
+    Utils.setText("chapter-title", data.title);
+    
+    // RENDER ISI CERITA DENGAN RAPI
+    document.getElementById("chapter-content").innerHTML = Utils.renderMarkdown(data.content);
+
+    // RENDER TOMBOL LINK EKSTERNAL
+    const linkBox = document.getElementById("chapter-external-links");
+    if(linkBox && data.external_links) {
+        let html = "";
+        const l = data.external_links;
+        // Cek jika link ada isinya (lebih dari 1 huruf)
+        if(l.karyakarsa && l.karyakarsa.length > 1) html += `<a href="${l.karyakarsa}" target="_blank" class="btn-ext btn-kk">🎁 Karyakarsa</a>`;
+        if(l.wattpad && l.wattpad.length > 1) html += `<a href="${l.wattpad}" target="_blank" class="btn-ext btn-wp">🟠 Wattpad</a>`;
+        if(l.goodnovel && l.goodnovel.length > 1) html += `<a href="${l.goodnovel}" target="_blank" class="btn-ext btn-gn">📘 GoodNovel</a>`;
+        if(l.custom_url && l.custom_url.length > 1) html += `<a href="${l.custom_url}" target="_blank" class="btn-ext btn-custom">🔗 ${l.custom_text||'Link'}</a>`;
+        
+        linkBox.innerHTML = html ? `<div class="external-links-box"><p>Lanjut baca di:</p><div class="ext-buttons">${html}</div></div>` : "";
+    }
+
+    const btnBack = document.getElementById("btn-back-novel");
+    if(btnBack) btnBack.href = `novel.html?slug=${novelSlug}`;
+
+    const currentNum = parseInt(chapCode);
+    const nextCode = String(currentNum + 1).padStart(2,'0');
+    const prevCode = String(currentNum - 1).padStart(2,'0');
+
+    const btnPrev = document.getElementById("btn-prev");
+    if(btnPrev) {
+        if(currentNum > 1) {
+            btnPrev.href = `chapter.html?novel=${novelSlug}&chapter=${prevCode}`;
+            btnPrev.style.display = "inline-flex";
+        } else btnPrev.style.display = "none";
+    }
+
+    const btnNext = document.getElementById("btn-next");
+    if(btnNext) {
+        const nextData = await Utils.fetchJSON(`${PATHS.chaptersDir}${novelSlug}-${nextCode}.json`);
+        if(nextData) {
+            btnNext.href = `chapter.html?novel=${novelSlug}&chapter=${nextCode}`;
+            btnNext.style.display = "inline-flex";
+        } else btnNext.style.display = "none";
+    }
+  }
+
+  /* --- 5. LIST NOVEL & TULISAN --- */
+  async function initWorksList() {
+    const container = document.getElementById("works-container");
+    if (!container) return;
+    container.innerHTML = '<div style="padding:20px; text-align:center;">⏳ Sedang memuat...</div>';
+    const data = await Utils.fetchJSON(PATHS.works);
+    if (!data || !data.works || data.works.length === 0) {
+      container.innerHTML = '<div class="glass-panel" style="padding:20px; text-align:center;">Belum ada novel.</div>'; return;
+    }
+    container.innerHTML = ""; container.style.display = "grid";
+    container.style.gridTemplateColumns = "repeat(auto-fill, minmax(160px, 1fr))"; container.style.gap = "20px";
+    data.works.forEach(work => {
+      const card = document.createElement("a"); card.href = `novel.html?slug=${work.slug}`; card.className = "glass-panel card-work";
+      const cover = work.cover || 'assets/images/defaults/cover-default.jpg';
+      card.innerHTML = `<div style="aspect-ratio:2/3; width:100%; border-radius:12px; overflow:hidden; margin-bottom:12px; background:#e2e8f0;"><img src="${cover}" style="width:100%; height:100%; object-fit:cover;" loading="lazy"></div><h4 style="margin:0 0 6px; font-size:1rem; line-height:1.4; font-weight:700;">${work.title}</h4><div style="font-size:0.75rem; color:var(--muted); margin-top:auto;"><span class="badge">${work.status || 'Ongoing'}</span></div>`;
+      container.appendChild(card);
+    });
+  }
+
+  async function initWritingsList() {
+    const container = document.getElementById("writings-container"); if (!container) return;
+    container.innerHTML = '<div>Memuat...</div>';
+    const data = await Utils.fetchJSON(PATHS.writings);
+    if (!data || !data.writings) return container.innerHTML = '<div>Kosong.</div>';
+    container.innerHTML = "";
+    data.writings.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+      const row = document.createElement("div"); row.className = "glass-panel"; row.style.cssText = "margin-bottom:15px; padding:22px; border-left:4px solid var(--brand);";
+      row.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:0.8rem; color:var(--brand); font-weight:bold;">${item.category || 'Artikel'}</span><span style="font-size:0.8rem; color:var(--muted);">${Utils.formatDate(item.date)}</span></div><h3 style="margin:0 0 10px; font-size:1.25rem;">${item.title}</h3><p style="font-size:0.95rem; line-height:1.7; color:var(--text-2); margin:0;">${item.content ? Utils.renderMarkdown(item.content) : '...'}</p>`;
+      container.appendChild(row);
+    });
+  }
+
+  /* --- ROUTER --- */
+  function init() {
+    initGlobalSettings();
+    const path = window.location.pathname.toLowerCase();
+    const slug = Utils.getQueryParam("slug");
+    const chapter = Utils.getQueryParam("chapter");/* =========================================================
+   TITIK FIKSI — Main Controller (Fixed Text & Links)
+   Perbaikan: Logika Paragraf, Hapus Sampah, & Tombol Link
+   ========================================================= */
+
+const TitikFiksi = (() => {
+  const PATHS = {
+    settings: "/content/settings/settings_general.json",
+    home: "/content/home/home.json",
+    works: "/content/works/works.json",
+    writings: "/content/writings/writings.json",
+    chaptersDir: "/content/chapters/" 
+  };
+
+  const Utils = {
+    getQueryParam(param) { return new URLSearchParams(window.location.search).get(param); },
+    formatDate(dateString) {
+      if (!dateString) return "";
+      return new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    },
+    async fetchJSON(path) {
+      try {
+        const timestamp = new Date().getTime(); 
+        const url = `${path}?v=${timestamp}`; 
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) { return null; }
+    },
+    setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    },
+    
+    // 🔥 PERBAIKAN UTAMA: LOGIKA TEKS RAPI 🔥
+    renderMarkdown(text) {
+      if (!text) return "";
+      
+      // 1. Bersihkan karakter aneh jika ada
+      let clean = text.replace(/\\/g, ''); // Hapus tanda backslash (\)
+      
+      // 2. Deteksi Paragraf: Pisahkan berdasarkan Enter 2x
+      // Ini membuat teks tidak menumpuk dan rapi
+      return clean.split(/\n\s*\n/).map(para => {
+        if (!para.trim()) return "";
+        // Proses Bold/Italic dalam paragraf
+        let p = para
+          .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+          .replace(/\*(.*?)\*/g, '<i>$1</i>')
+          .replace(/__(.*?)__/g, '<u>$1</u>')
+          .replace(/\n/g, '<br>'); // Enter 1x jadi baris baru biasa
+        return `<p style="margin-bottom:18px; text-align:justify;">${p}</p>`;
+      }).join("");
+    }
+  };
+
+  /* --- 1. GLOBAL --- */
+  async function initGlobalSettings() {
+    const settings = await Utils.fetchJSON(PATHS.settings);
+    if (settings) {
+      if (settings.brand_logo) document.querySelectorAll('img[data-brand="logo"]').forEach(img => img.src = settings.brand_logo);
+      if (settings.brand_favicon) {
+        let link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+        link.rel = 'icon'; link.href = settings.brand_favicon; document.head.appendChild(link);
+      }
+      if (settings.site_title && (location.pathname === '/' || location.pathname.includes('index'))) {
+          document.title = settings.site_title;
+      }
+    }
+  }
+
+  /* --- 2. HOME --- */
+  async function initHomePage() {
+    const data = await Utils.fetchJSON(PATHS.home);
+    if (!data || !data.hero) return;
+    Utils.setText("hero-title", data.hero.title);
+    Utils.setText("hero-subtitle", data.hero.subtitle);
+    Utils.setText("hero-intro", data.hero.intro);
+    
+    // Tampilkan Link Platform di Home (Jika ada)
+    const platContainer = document.querySelector(".platform-grid");
+    if (data.platforms && platContainer) {
+      let html = "";
+      const p = data.platforms;
+      if (p.wattpad) html += `<a href="${p.wattpad}" target="_blank" class="btn-platform">🟠 Wattpad</a>`;
+      if (p.karyakarsa) html += `<a href="${p.karyakarsa}" target="_blank" class="btn-platform">🎁 Karyakarsa</a>`;
+      if (p.goodnovel) html += `<a href="${p.goodnovel}" target="_blank" class="btn-platform">📘 GoodNovel</a>`;
+      if (p.fizzo) html += `<a href="${p.fizzo}" target="_blank" class="btn-platform">📗 Fizzo</a>`;
+      platContainer.innerHTML = html;
+    }
+
+    const ytContainer = document.getElementById("hero-youtube");
+    if (data.hero.youtube_embed && ytContainer) {
+      let url = data.hero.youtube_embed.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
+      ytContainer.innerHTML = `<iframe src="${url}" title="YouTube" frameborder="0" allowfullscreen></iframe>`;
+      ytContainer.style.display = "block";
+    }
+  }
+
+  /* --- 3. DETAIL NOVEL (Fix Sinopsis & Link) --- */
+  async function initNovelDetail() {
+    const slug = Utils.getQueryParam("slug");
+    if (!slug) return;
+
+    Utils.setText("work-title", "Memuat...");
+    const data = await Utils.fetchJSON(PATHS.works);
+    const novel = data?.works?.find(w => w.slug === slug);
+    if (!novel) return Utils.setText("work-title", "Novel Tidak Ditemukan");
+
+    document.title = `${novel.title} | Detail`;
+    Utils.setText("work-title", novel.title);
+    Utils.setText("work-genre", `📌 ${novel.genre || 'Fiksi'}`);
+    Utils.setText("work-status", `✅ ${novel.status || '-'}`);
+    
+    // GUNAKAN RENDER MARKDOWN AGAR SINOPSIS RAPI
+    document.getElementById("work-synopsis").innerHTML = Utils.renderMarkdown(novel.synopsis);
+    
+    const imgEl = document.getElementById("work-cover-img");
+    if (imgEl) imgEl.src = novel.cover || "assets/images/defaults/cover-default.jpg";
+
+    // LOAD BAB
+    const listContainer = document.getElementById("chapters-list");
+    listContainer.innerHTML = '<div style="padding:10px;">Mengecek bab...</div>';
+    
+    let chapterCount = 1, foundChapters = [], gapCount = 0;
+    while (chapterCount <= 300 && gapCount < 5) {
+      const code = String(chapterCount).padStart(2, '0');
+      const chapData = await Utils.fetchJSON(`${PATHS.chaptersDir}${slug}-${code}.json`);
+      if (chapData) {
+        if (chapData.published !== false) foundChapters.push({ ...chapData, code });
+        gapCount = 0; 
+      } else gapCount++;
+      chapterCount++;
+    }
+
+    listContainer.innerHTML = "";
+    if (foundChapters.length === 0) listContainer.innerHTML = '<div class="glass-panel" style="padding:15px; text-align:center;">Belum ada bab.</div>';
+    else {
+      foundChapters.sort((a,b) => parseInt(a.code) - parseInt(b.code));
+      foundChapters.forEach(chap => {
+        const item = document.createElement("a");
+        item.className = "chapter-item glass-panel";
+        item.href = `chapter.html?novel=${slug}&chapter=${chap.code}`;
+        item.style.marginBottom = "10px";
+        item.innerHTML = `<div class="chap-num">#${parseInt(chap.code)}</div><div class="chap-info"><strong>${chap.title}</strong><span>${Utils.formatDate(chap.date)}</span></div>`;
+        listContainer.appendChild(item);
+      });
+    }
+  }
+
+  /* --- 4. BACA BAB (FULL MODE) --- */
+  async function initReadChapter() {
+    window.scrollTo(0,0);
+    const novelSlug = Utils.getQueryParam("novel");
+    const chapCode = Utils.getQueryParam("chapter");
+    if (!novelSlug || !chapCode) return;
+
+    const data = await Utils.fetchJSON(`${PATHS.chaptersDir}${novelSlug}-${chapCode}.json`);
+    if (!data) {
+        Utils.setText("chapter-title", "Bab Tidak Ditemukan");
+        return;
+    }
+
+    document.title = `${data.title}`;
+    Utils.setText("chapter-top", `CHAPTER ${parseInt(chapCode)}`);
+    Utils.setText("chapter-title", data.title);
+    
+    // RENDER ISI CERITA DENGAN RAPI
+    document.getElementById("chapter-content").innerHTML = Utils.renderMarkdown(data.content);
+
+    // RENDER TOMBOL LINK EKSTERNAL
+    const linkBox = document.getElementById("chapter-external-links");
+    if(linkBox && data.external_links) {
+        let html = "";
+        const l = data.external_links;
+        // Cek jika link ada isinya (lebih dari 1 huruf)
+        if(l.karyakarsa && l.karyakarsa.length > 1) html += `<a href="${l.karyakarsa}" target="_blank" class="btn-ext btn-kk">🎁 Karyakarsa</a>`;
+        if(l.wattpad && l.wattpad.length > 1) html += `<a href="${l.wattpad}" target="_blank" class="btn-ext btn-wp">🟠 Wattpad</a>`;
+        if(l.goodnovel && l.goodnovel.length > 1) html += `<a href="${l.goodnovel}" target="_blank" class="btn-ext btn-gn">📘 GoodNovel</a>`;
+        if(l.custom_url && l.custom_url.length > 1) html += `<a href="${l.custom_url}" target="_blank" class="btn-ext btn-custom">🔗 ${l.custom_text||'Link'}</a>`;
+        
+        linkBox.innerHTML = html ? `<div class="external-links-box"><p>Lanjut baca di:</p><div class="ext-buttons">${html}</div></div>` : "";
+    }
+
+    const btnBack = document.getElementById("btn-back-novel");
+    if(btnBack) btnBack.href = `novel.html?slug=${novelSlug}`;
+
+    const currentNum = parseInt(chapCode);
+    const nextCode = String(currentNum + 1).padStart(2,'0');
+    const prevCode = String(currentNum - 1).padStart(2,'0');
+
+    const btnPrev = document.getElementById("btn-prev");
+    if(btnPrev) {
+        if(currentNum > 1) {
+            btnPrev.href = `chapter.html?novel=${novelSlug}&chapter=${prevCode}`;
+            btnPrev.style.display = "inline-flex";
+        } else btnPrev.style.display = "none";
+    }
+
+    const btnNext = document.getElementById("btn-next");
+    if(btnNext) {
+        const nextData = await Utils.fetchJSON(`${PATHS.chaptersDir}${novelSlug}-${nextCode}.json`);
+        if(nextData) {
+            btnNext.href = `chapter.html?novel=${novelSlug}&chapter=${nextCode}`;
+            btnNext.style.display = "inline-flex";
+        } else btnNext.style.display = "none";
+    }
+  }
+
+  /* --- 5. LIST NOVEL & TULISAN --- */
+  async function initWorksList() {
+    const container = document.getElementById("works-container");
+    if (!container) return;
+    container.innerHTML = '<div style="padding:20px; text-align:center;">⏳ Sedang memuat...</div>';
+    const data = await Utils.fetchJSON(PATHS.works);
+    if (!data || !data.works || data.works.length === 0) {
+      container.innerHTML = '<div class="glass-panel" style="padding:20px; text-align:center;">Belum ada novel.</div>'; return;
+    }
+    container.innerHTML = ""; container.style.display = "grid";
+    container.style.gridTemplateColumns = "repeat(auto-fill, minmax(160px, 1fr))"; container.style.gap = "20px";
+    data.works.forEach(work => {
+      const card = document.createElement("a"); card.href = `novel.html?slug=${work.slug}`; card.className = "glass-panel card-work";
+      const cover = work.cover || 'assets/images/defaults/cover-default.jpg';
+      card.innerHTML = `<div style="aspect-ratio:2/3; width:100%; border-radius:12px; overflow:hidden; margin-bottom:12px; background:#e2e8f0;"><img src="${cover}" style="width:100%; height:100%; object-fit:cover;" loading="lazy"></div><h4 style="margin:0 0 6px; font-size:1rem; line-height:1.4; font-weight:700;">${work.title}</h4><div style="font-size:0.75rem; color:var(--muted); margin-top:auto;"><span class="badge">${work.status || 'Ongoing'}</span></div>`;
+      container.appendChild(card);
+    });
+  }
+
+  async function initWritingsList() {
+    const container = document.getElementById("writings-container"); if (!container) return;
+    container.innerHTML = '<div>Memuat...</div>';
+    const data = await Utils.fetchJSON(PATHS.writings);
+    if (!data || !data.writings) return container.innerHTML = '<div>Kosong.</div>';
+    container.innerHTML = "";
+    data.writings.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+      const row = document.createElement("div"); row.className = "glass-panel"; row.style.cssText = "margin-bottom:15px; padding:22px; border-left:4px solid var(--brand);";
+      row.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:0.8rem; color:var(--brand); font-weight:bold;">${item.category || 'Artikel'}</span><span style="font-size:0.8rem; color:var(--muted);">${Utils.formatDate(item.date)}</span></div><h3 style="margin:0 0 10px; font-size:1.25rem;">${item.title}</h3><p style="font-size:0.95rem; line-height:1.7; color:var(--text-2); margin:0;">${item.content ? Utils.renderMarkdown(item.content) : '...'}</p>`;
+      container.appendChild(row);
+    });
+  }
+
+  /* --- ROUTER --- */
+  function init() {
+    initGlobalSettings();
+    const path = window.location.pathname.toLowerCase();
+    const slug = Utils.getQueryParam("slug");
+    const chapter = Utils.getQueryParam("chapter");
+
+    if (chapter && Utils.getQueryParam("novel")) initReadChapter();
+    else if (slug) initNovelDetail();
+    else if (path.includes("works") || path.includes("novel")) initWorksList();
+    else if (path.includes("writings") || path.includes("tulisan")) initWritingsList();
+    else if (path === "/" || path.includes("index")) initHomePage();
+  }
   return { init, Utils };
 })();
+document.addEventListener("DOMContentLoaded", TitikFiksi.init);
 
+    if (chapter && Utils.getQueryParam("novel")) initReadChapter();
+    else if (slug) initNovelDetail();
+    else if (path.includes("works") || path.includes("novel")) initWorksList();
+    else if (path.includes("writings") || path.includes("tulisan")) initWritingsList();
+    else if (path === "/" || path.includes("index")) initHomePage();
+  }
+  return { init, Utils };
+})();
+document.addEventListener("DOMContentLoaded", TitikFiksi.init);
+    else if (path.includes("works") || path.includes("novel")) initWorksList();
+    else if (path.includes("writings") || path.includes("tulisan")) initWritingsList();
+    else if (path === "/" || path.includes("index")) initHomePage();
+  }
+  return { init, Utils };
+})();
+document.addEventListener("DOMContentLoaded", TitikFiksi.init);
+    else if (slug) initNovelDetail();
+    else if (path.includes("works") || path.includes("novel")) initWorksList();
+    else if (path.includes("writings") || path.includes("tulisan")) initWritingsList();
+    else if (path === "/" || path.includes("index")) initHomePage();
+  }
+  return { init, Utils };
+})();
 document.addEventListener("DOMContentLoaded", TitikFiksi.init);
