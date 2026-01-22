@@ -1,10 +1,10 @@
 /* =========================================================
-   TITIK FIKSI — Main Controller (FIXED VERSION)
-   Perbaikan: Logika Bab, Anti-Cache, dan Penampilan
+   TITIK FIKSI — Main Controller (FINAL ROBUST VERSION)
+   Fix: White Screen, URL Detection, Caching, & Loop Logic
    ========================================================= */
 
 const TitikFiksi = (() => {
-  // Menggunakan Absolute Path (diawali /) agar lebih stabil
+  // Gunakan Absolute Path (diawali /) agar stabil di semua halaman
   const PATHS = {
     settings: "/content/settings/settings_general.json",
     home: "/content/home/home.json",
@@ -21,17 +21,17 @@ const TitikFiksi = (() => {
       return new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
     },
 
-    // FITUR BARU: Fetch dengan Anti-Cache (Timestamp)
-    // Agar data dari Admin Panel langsung tampil tanpa perlu clear cache browser
+    // --- ANTI-CACHE FETCH ---
+    // Menambahkan ?v=WAKTU agar browser selalu mengambil data terbaru dari server (Admin Panel)
     async fetchJSON(path) {
       try {
-        const timestamp = new Date().getTime(); // Penanda waktu unik
+        const timestamp = new Date().getTime(); 
         const url = `${path}?v=${timestamp}`; 
         const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        if (!res.ok) throw new Error(`Gagal memuat: ${path} (Status: ${res.status})`);
         return await res.json();
       } catch (e) {
-        console.error("Gagal mengambil data:", path, e);
+        console.error("Error Fetching Data:", e);
         return null;
       }
     },
@@ -68,7 +68,8 @@ const TitikFiksi = (() => {
           document.title = settings.site_title;
       }
     }
-
+    
+    // Update link sosmed
     if (homeData && homeData.socials) {
       const s = homeData.socials;
       if (s.instagram) updateLink('social-ig', s.instagram);
@@ -106,49 +107,53 @@ const TitikFiksi = (() => {
     }
   }
 
-  /* --- 3. LIST NOVEL (PERBAIKAN DISPLAY KOSONG) --- */
+  /* --- 3. LIST NOVEL (WORKS) --- */
   async function initWorksList() {
     const container = document.getElementById("works-container");
-    if (!container) return;
+    if (!container) return; // Jika elemen tidak ada, stop.
 
-    // Reset container style
-    container.style.display = "grid";
-    container.style.gridTemplateColumns = "repeat(auto-fill, minmax(160px, 1fr))"; // Lebar kartu diperbaiki
-    container.style.gap = "20px";
-    
-    container.innerHTML = '<div class="loading-spinner">Sedang memuat novel...</div>';
+    // Tampilkan loading agar user tahu script berjalan
+    container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-2);">⏳ Sedang memuat daftar novel...</div>';
+    container.style.display = "grid"; 
     
     const data = await Utils.fetchJSON(PATHS.works);
     
-    // Validasi data lebih ketat
-    if (!data || !data.works || !Array.isArray(data.works) || data.works.length === 0) {
+    // Cek Error: Jika data null (gagal fetch) atau kosong
+    if (!data || !data.works) {
       container.innerHTML = `
         <div class="glass-panel" style="grid-column: 1/-1; padding: 30px; text-align: center;">
-          <h3>Belum ada novel yang dipublikasikan.</h3>
-          <p style="color:var(--muted)">Silakan tambahkan novel melalui Admin Panel.</p>
+          <h3 style="margin-top:0;">Gagal Memuat Data</h3>
+          <p style="color:var(--muted)">Pastikan file <b>content/works/works.json</b> sudah ada di Admin Panel.</p>
         </div>`;
+      container.style.display = "block"; 
       return;
     }
 
+    if (data.works.length === 0) {
+      container.innerHTML = '<div class="glass-panel" style="padding:20px; text-align:center;">Belum ada novel yang dipublikasikan.</div>';
+      container.style.display = "block";
+      return;
+    }
+
+    // Render Data
     container.innerHTML = "";
+    container.style.gridTemplateColumns = "repeat(auto-fill, minmax(160px, 1fr))";
+    container.style.gap = "20px";
+
     data.works.forEach(work => {
       const card = document.createElement("a");
       card.href = `novel.html?slug=${work.slug}`;
       card.className = "glass-panel card-work";
       
-      // Default image handler
       const coverImg = work.cover ? work.cover : 'assets/images/defaults/cover-default.jpg';
 
       card.innerHTML = `
-        <div style="aspect-ratio:2/3; width:100%; border-radius:12px; overflow:hidden; margin-bottom:12px; background:#e2e8f0; position:relative;">
-          <img src="${coverImg}" 
-               style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;" 
-               alt="${work.title}"
-               loading="lazy">
+        <div style="aspect-ratio:2/3; width:100%; border-radius:12px; overflow:hidden; margin-bottom:12px; background:#e2e8f0;">
+          <img src="${coverImg}" style="width:100%; height:100%; object-fit:cover;" alt="${work.title}" loading="lazy">
         </div>
-        <h4 style="margin:0 0 6px; font-size:1rem; line-height:1.4; font-weight:700; color:var(--text-1);">${work.title}</h4>
-        <div style="font-size:0.75rem; color:var(--muted); margin-top:auto; display:flex; justify-content:space-between; align-items:center;">
-           <span class="badge" style="font-size:0.7rem; background:rgba(59,130,246,0.1); color:var(--brand); border-color:transparent;">${work.status || 'Ongoing'}</span>
+        <h4 style="margin:0 0 6px; font-size:1rem; line-height:1.4; font-weight:700;">${work.title}</h4>
+        <div style="font-size:0.75rem; color:var(--muted); margin-top:auto;">
+           <span class="badge" style="background:rgba(59,130,246,0.1); color:var(--brand); border:none;">${work.status || 'Ongoing'}</span>
         </div>
       `;
       container.appendChild(card);
@@ -160,31 +165,27 @@ const TitikFiksi = (() => {
     const container = document.getElementById("writings-container");
     if (!container) return;
     
-    container.innerHTML = '<div class="loading-spinner">Memuat tulisan...</div>';
+    container.innerHTML = '<div style="padding:20px; text-align:center;">⏳ Memuat tulisan...</div>';
     const data = await Utils.fetchJSON(PATHS.writings);
     
     if (!data || !data.writings || data.writings.length === 0) {
-      container.innerHTML = '<div class="empty-state">Belum ada tulisan terbaru.</div>';
+      container.innerHTML = '<div class="glass-panel" style="padding:20px; text-align:center;">Belum ada tulisan terbaru.</div>';
       return;
     }
     
     container.innerHTML = "";
-    // Urutkan tulisan dari yang terbaru (asumsi format tanggal YYYY-MM-DD)
-    const sortedWritings = data.writings.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Urutkan dari yang terbaru
+    const sorted = data.writings.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    sortedWritings.forEach(item => {
+    sorted.forEach(item => {
       const row = document.createElement("div");
       row.className = "glass-panel";
-      row.style.cssText = "margin-bottom:15px; padding:22px; border-left:4px solid var(--brand); transition:transform 0.2s;";
+      row.style.cssText = "margin-bottom:15px; padding:22px; border-left:4px solid var(--brand);";
       
       row.innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span style="font-size:0.8rem; color:var(--brand); font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">
-            ${item.category || 'Artikel'}
-          </span>
-          <span style="font-size:0.8rem; color:var(--muted);">
-            ${Utils.formatDate(item.date)}
-          </span>
+          <span style="font-size:0.8rem; color:var(--brand); font-weight:bold; text-transform:uppercase;">${item.category || 'Artikel'}</span>
+          <span style="font-size:0.8rem; color:var(--muted);">${Utils.formatDate(item.date)}</span>
         </div>
         <h3 style="margin:0 0 10px; font-size:1.25rem;">${item.title}</h3>
         <p style="font-size:0.95rem; line-height:1.7; color:var(--text-2); margin:0;">
@@ -195,76 +196,67 @@ const TitikFiksi = (() => {
     });
   }
 
-  /* --- 5. DETAIL NOVEL & LOGIKA BAB (FIXED LOOP) --- */
+  /* --- 5. DETAIL NOVEL & BAB (SMART LOOP) --- */
   async function initNovelDetail() {
     const slug = Utils.getQueryParam("slug");
     if (!slug) return (window.location.href = "works.html");
 
-    Utils.setText("work-title", "Memuat data novel...");
-    
+    Utils.setText("work-title", "Sedang memuat...");
     const data = await Utils.fetchJSON(PATHS.works);
-    const novel = data?.works?.find(w => w.slug === slug);
     
+    // Cari novel berdasarkan slug
+    const novel = data?.works?.find(w => w.slug === slug);
     if (!novel) {
         Utils.setText("work-title", "Novel Tidak Ditemukan");
-        Utils.setText("work-synopsis", "Mohon periksa kembali URL atau kembali ke daftar novel.");
+        Utils.setText("work-synopsis", "Cek kembali URL atau kembali ke halaman daftar novel.");
         return;
     }
 
-    // Isi Data Novel
     document.title = `${novel.title} | Titik Fiksi`;
     Utils.setText("work-title", novel.title);
-    Utils.setText("work-genre", `📌 ${novel.genre || 'Umum'}`);
+    Utils.setText("work-genre", `📌 ${novel.genre || 'Fiksi'}`);
     Utils.setText("work-status", `✅ ${novel.status || '-'}`);
     Utils.setText("work-synopsis", novel.synopsis);
     
     const imgEl = document.getElementById("work-cover-img");
     if (imgEl) imgEl.src = novel.cover || "assets/images/defaults/cover-default.jpg";
 
-    // --- LOGIKA PENCARIAN BAB YANG LEBIH PINTAR ---
+    // --- CARI BAB DENGAN TOLERANSI ERROR (Loop Pintar) ---
     const listContainer = document.getElementById("chapters-list");
-    listContainer.innerHTML = '<div class="loading-spinner">Mengecek ketersediaan bab...</div>';
+    listContainer.innerHTML = '<div style="padding:10px; color:var(--muted);">Sedang mengecek bab yang tersedia...</div>';
     
     let chapterCount = 1;
     let foundChapters = [];
-    let gapCount = 0; // Menghitung berapa kali gagal berturut-turut
-    const MAX_GAP = 5; // Toleransi: Jika 5 nomor berturut-turut kosong, baru berhenti.
-    const MAX_CHAPTERS = 500; // Batas aman
+    let gapCount = 0; 
+    const MAX_GAP = 5; // Toleransi: Jika 5 nomor kosong berturut-turut, baru berhenti.
+    const MAX_CHAPTERS = 300; // Batas aman
 
     while (chapterCount <= MAX_CHAPTERS && gapCount < MAX_GAP) {
-      // Coba format '01', '02' dll
+      // Cek format 01, 02.. lalu 10, 11..
       const code = String(chapterCount).padStart(2, '0');
       const filename = `${slug}-${code}.json`;
       
-      const chapterData = await Utils.fetchJSON(`${PATHS.chaptersDir}${filename}`);
+      const chapData = await Utils.fetchJSON(`${PATHS.chaptersDir}${filename}`);
       
-      if (chapterData) {
-        // Jika ketemu
-        if (chapterData.published !== false) {
-            foundChapters.push({ ...chapterData, code });
-        }
-        gapCount = 0; // Reset gap karena ketemu
+      if (chapData) {
+        if (chapData.published !== false) foundChapters.push({ ...chapData, code });
+        gapCount = 0; // Reset gap jika ketemu
       } else {
-        // Jika tidak ketemu, tambah gap
-        gapCount++;
+        gapCount++; // Tambah gap jika tidak ketemu
       }
-      
       chapterCount++;
     }
 
     listContainer.innerHTML = "";
     if (foundChapters.length === 0) {
-        listContainer.innerHTML = '<div class="glass-card" style="padding:20px; text-align:center;">Belum ada bab yang dirilis.</div>';
+        listContainer.innerHTML = '<div class="glass-panel" style="padding:15px; text-align:center;">Belum ada bab dirilis.</div>';
     } else {
-      // Urutkan bab biar rapi
       foundChapters.sort((a,b) => parseInt(a.code) - parseInt(b.code));
-      
       foundChapters.forEach(chap => {
         const item = document.createElement("a");
         item.className = "chapter-item glass-panel";
         item.href = `chapter.html?novel=${slug}&chapter=${chap.code}`;
         item.style.marginBottom = "10px";
-        
         item.innerHTML = `
             <div class="chap-num">#${parseInt(chap.code)}</div>
             <div class="chap-info">
@@ -289,75 +281,86 @@ const TitikFiksi = (() => {
     const data = await Utils.fetchJSON(`${PATHS.chaptersDir}${filename}`);
     
     if (!data) {
-        Utils.setText("chapter-title", "Error: Bab tidak ditemukan");
-        document.getElementById("chapter-content").innerHTML = "<p>File bab mungkin belum dibuat atau nama file tidak sesuai.</p>";
+        Utils.setText("chapter-title", "Bab Tidak Ditemukan");
+        document.getElementById("chapter-content").innerHTML = "<p>Bab ini mungkin belum dipublikasikan atau URL salah.</p>";
         return;
     }
 
-    document.title = `${data.title} | Baca Novel`;
-    Utils.setText("chapter-top", `CHAPTER ${parseInt(chapCode)}`); // Tampilkan angka asli (1 bukan 01)
+    document.title = `${data.title} | Baca`;
+    Utils.setText("chapter-top", `CHAPTER ${parseInt(chapCode)}`);
     Utils.setText("chapter-title", data.title);
     document.getElementById("chapter-content").innerHTML = Utils.renderMarkdown(data.content);
 
-    // Tombol Navigasi
-    const btnBack = document.getElementById("btn-back-novel");
-    if(btnBack) btnBack.href = `novel.html?slug=${novelSlug}`;
-    
-    // Logika tombol Previous & Next
-    const currentNum = parseInt(chapCode);
-    const prevNum = currentNum - 1;
-    const nextNum = currentNum + 1;
-
-    const prevCode = String(prevNum).padStart(2,'0');
-    const nextCode = String(nextNum).padStart(2,'0');
-
-    const btnPrev = document.getElementById("btn-prev");
-    if(btnPrev) {
-        if (currentNum > 1) {
-            btnPrev.href = `chapter.html?novel=${novelSlug}&chapter=${prevCode}`;
-            btnPrev.style.display = "inline-flex";
-        } else {
-            btnPrev.style.display = "none";
-        }
-    }
-
-    const btnNext = document.getElementById("btn-next");
-    if(btnNext) {
-        // Cek dulu apakah bab selanjutnya ada
-        const nextExist = await Utils.fetchJSON(`${PATHS.chaptersDir}${novelSlug}-${nextCode}.json`);
-        if(nextExist) {
-            btnNext.href = `chapter.html?novel=${novelSlug}&chapter=${nextCode}`;
-            btnNext.style.display = "inline-flex";
-        } else {
-            btnNext.style.display = "none";
-        }
-    }
-
-    // Eksternal Link (Berbayar/Platform Lain)
+    // External Link & Navigasi
     const linkBox = document.getElementById("chapter-external-links");
     if(linkBox && data.external_links) {
         let html = "";
         const l = data.external_links;
-        // Hanya render jika link tidak kosong
-        if(l.karyakarsa && l.karyakarsa.length > 5) html += `<a href="${l.karyakarsa}" target="_blank" class="btn-ext btn-kk">🎁 Karyakarsa</a>`;
-        if(l.wattpad && l.wattpad.length > 5) html += `<a href="${l.wattpad}" target="_blank" class="btn-ext btn-wp">🟠 Wattpad</a>`;
-        if(l.goodnovel && l.goodnovel.length > 5) html += `<a href="${l.goodnovel}" target="_blank" class="btn-ext btn-gn">📘 GoodNovel</a>`;
-        if(l.custom_url && l.custom_url.length > 5) html += `<a href="${l.custom_url}" target="_blank" class="btn-ext btn-custom">🔗 ${l.custom_text||'Link'}</a>`;
-        
+        if(l.karyakarsa) html += `<a href="${l.karyakarsa}" target="_blank" class="btn-ext btn-kk">🎁 Karyakarsa</a>`;
+        if(l.wattpad) html += `<a href="${l.wattpad}" target="_blank" class="btn-ext btn-wp">🟠 Wattpad</a>`;
+        if(l.goodnovel) html += `<a href="${l.goodnovel}" target="_blank" class="btn-ext btn-gn">📘 GoodNovel</a>`;
+        if(l.custom_url) html += `<a href="${l.custom_url}" target="_blank" class="btn-ext btn-custom">🔗 ${l.custom_text||'Link'}</a>`;
         linkBox.innerHTML = html ? `<div class="external-links-box"><p>Lanjut baca di:</p><div class="ext-buttons">${html}</div></div>` : "";
+    }
+
+    const btnBack = document.getElementById("btn-back-novel");
+    if(btnBack) btnBack.href = `novel.html?slug=${novelSlug}`;
+
+    // Navigasi Next/Prev
+    const currentNum = parseInt(chapCode);
+    const prevCode = String(currentNum - 1).padStart(2,'0');
+    const nextCode = String(currentNum + 1).padStart(2,'0');
+
+    const btnPrev = document.getElementById("btn-prev");
+    if(btnPrev) {
+        if(currentNum > 1) {
+            btnPrev.href = `chapter.html?novel=${novelSlug}&chapter=${prevCode}`;
+            btnPrev.style.display = "inline-flex";
+        } else btnPrev.style.display = "none";
+    }
+
+    const btnNext = document.getElementById("btn-next");
+    if(btnNext) {
+        // Cek dulu apakah file bab selanjutnya ada
+        const nextData = await Utils.fetchJSON(`${PATHS.chaptersDir}${novelSlug}-${nextCode}.json`);
+        if(nextData) {
+            btnNext.href = `chapter.html?novel=${novelSlug}&chapter=${nextCode}`;
+            btnNext.style.display = "inline-flex";
+        } else btnNext.style.display = "none";
     }
   }
 
+  /* --- INIT CONTROLLER (FIXED ROUTING) --- */
   function init() {
     initGlobalSettings();
-    const path = window.location.pathname;
     
-    if (path === "/" || path.includes("index.html")) initHomePage();
-    else if (path.includes("works.html")) initWorksList();
-    else if (path.includes("writings.html")) initWritingsList();
-    else if (path.includes("novel.html")) initNovelDetail();
-    else if (path.includes("chapter.html")) initReadChapter();
+    // LOGIKA NAVIGASI YANG DIPERBAIKI (Support URL tanpa .html)
+    const path = window.location.pathname.toLowerCase(); 
+    
+    // Deteksi halaman berdasarkan kata kunci di URL
+    if (path === "/" || path.includes("index")) {
+        initHomePage();
+    } 
+    else if (path.includes("works") || path.includes("novel") && !path.includes("slug")) {
+        // Halaman Daftar Novel (works.html)
+        // Note: works.html kadang diakses via /works atau /novel tergantung penamaan file Anda.
+        // Di file Anda namanya works.html, tapi di screenshot navbar link "Novel".
+        initWorksList();
+    }
+    else if (path.includes("writings") || path.includes("tulisan")) {
+        // Halaman Tulisan (writings.html)
+        initWritingsList();
+    }
+    else if (path.includes("chapter") || path.includes("baca")) {
+        // Halaman Baca (chapter.html)
+        initReadChapter();
+    }
+    else if (Utils.getQueryParam("slug")) {
+        // Jika URL ada ?slug=... biasanya ini halaman Detail Novel (novel.html)
+        initNovelDetail();
+    }
   }
+
   return { init, Utils };
 })();
 
