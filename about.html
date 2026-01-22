@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="pearl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tentang | Titik Fiksi</title>
+
+  <link rel="stylesheet" href="assets/css/themes.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <div class="navbar-wrap">
+    <div class="container">
+      <nav class="navbar glass-panel">
+        <a class="brand" href="index.html">
+          <div class="brand-logo">
+            <img data-brand="logo" src="assets/images/logo/favicon.png" alt="Logo">
+          </div>
+          <div class="brand-title">
+            <strong>Titik Fiksi</strong>
+            <span>Tentang Penulis</span>
+          </div>
+        </a>
+
+        <div class="nav-links">
+          <a href="index.html">Beranda</a>
+          <a href="works.html">Novel</a>
+          <a href="writings.html">Tulisan</a>
+          <a class="active" href="about.html">Tentang</a>
+          <a href="contact.html">Kontak</a>
+        </div>
+
+        <div class="nav-actions">
+          <button id="theme-toggle" class="theme-btn" type="button">
+            <span class="theme-dot"></span>
+            <span id="theme-label">Pearl Sky</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <main class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>🧑‍💼 Tentang Saya</h2>
+        <p>Profil singkat, fokus karya, dan arah cerita.</p>
+      </div>
+
+      <div class="glass-card" style="padding:18px; line-height:1.8;">
+        <p>
+          Halo! Selamat datang di <b>Titik Fiksi</b>.
+          Website ini adalah rumah bagi karya-karya saya: novel, cerpen, tulisan, dan catatan proses kreatif.
+        </p>
+
+        <p>
+          Fokus utama saya adalah membangun cerita yang kuat dan nyaman dibaca.
+          Saya menikmati proses world-building, karakter yang hidup, dan konflik yang berlapis.
+        </p>
+
+        <p>
+          Untuk update terbaru, silakan cek menu <b>Novel</b>.
+          Untuk catatan penulis dan tulisan lain, bisa dibuka di menu <b>Tulisan</b>.
+        </p>
+
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="btn btn-primary" href="works.html">📚 Lihat Novel</a>
+          <a class="btn btn-soft" href="writings.html">✍️ Baca Tulisan</a>
+          <a class="btn btn-soft" href="contact.html">📩 Kontak</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner glass-panel">
+        <div>© <span id="yearNow"></span> Titik Fiksi</div>
+        <div style="display:flex; gap:10px;">
+          <a href="works.html">Novel</a>
+          <a href="writings.html">Tulisan</a>
+          <a href="contact.html">Kontak</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    document.getElementById("yearNow").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

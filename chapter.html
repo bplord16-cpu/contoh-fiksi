@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="pearl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baca Bab | Titik Fiksi</title>
+  
+  <link rel="stylesheet" href="assets/css/themes.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <style>
+    .read-area { font-size: 1.15rem; line-height: 1.8; max-width: 720px; margin: 0 auto; color: var(--text-1); }
+    .read-area p { margin-bottom: 24px; }
+    
+    /* STYLE LINK BERBAYAR */
+    .external-links-box { margin: 40px auto 20px; padding: 25px; border-radius: 16px; background: rgba(var(--brand-rgb), 0.05); border: 2px dashed var(--brand); text-align: center; max-width: 600px; }
+    .external-links-box p { font-weight: bold; margin-bottom: 16px; color: var(--text-2); }
+    .ext-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn-ext { padding: 12px 20px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 0.95rem; transition: transform 0.2s; color: white; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .btn-ext:hover { transform: translateY(-3px); filter: brightness(1.1); }
+    .btn-kk { background: #E22B2D; } 
+    .btn-wp { background: #FF6122; } 
+    .btn-gn { background: #2D68C4; } 
+    .btn-kbm { background: #00A651; } 
+    .btn-mn { background: #F83A3A; } 
+    .btn-custom { background: var(--text-1); }
+  </style>
+</head>
+
+<body>
+  <div class="navbar-wrap">
+    <div class="container">
+      <nav class="navbar glass-panel">
+        <a class="brand" href="index.html">
+          <div class="brand-logo">
+            <img data-brand="logo" src="assets/images/logo/favicon.png" alt="Logo">
+          </div>
+          <div class="brand-title"><strong>Titik Fiksi</strong></div>
+        </a>
+        <div class="nav-links"><a href="works.html">Kembali ke Novel</a></div>
+      </nav>
+    </div>
+  </div>
+
+  <main class="section">
+    <div class="container">
+      <div class="glass-card" style="padding: 30px; min-height: 80vh;">
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px;">
+          <span id="chapter-top" style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: var(--muted);">CHAPTER</span>
+          <h1 id="chapter-title" style="margin: 5px 0 0;">Memuat...</h1>
+        </div>
+
+        <article id="chapter-content" class="read-area">
+          <p>Sedang memuat isi cerita...</p>
+        </article>
+
+        <div id="chapter-external-links"></div>
+
+        <div style="margin-top: 40px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 20px;">
+          <a id="btn-prev" href="#" class="btn btn-soft" style="display: none;">⬅️ Sebelumnya</a>
+          <a id="btn-back-novel" href="#" class="btn btn-soft">Daftar Isi</a>
+          <a id="btn-next" href="#" class="btn btn-primary" style="display: none;">Selanjutnya ➜</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

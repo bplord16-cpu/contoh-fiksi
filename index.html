@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="pearl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Titik Fiksi | Website Resmi</title>
+  
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+  <link rel="stylesheet" href="assets/css/themes.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  
+  <style>
+    /* Style Tambahan untuk Hero Video */
+    .hero-video-wrap {
+      margin-top: 25px;
+      position: relative;
+      padding-bottom: 56.25%; /* Rasio 16:9 */
+      height: 0;
+      overflow: hidden;
+      border-radius: 16px;
+      box-shadow: var(--shadow-soft);
+      display: none; /* Sembunyi kalau tidak ada link */
+      background: #000;
+    }
+    .hero-video-wrap iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .hero-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+  </style>
+</head>
+
+<body>
+  <div class="navbar-wrap">
+    <div class="container">
+      <nav class="navbar glass-panel">
+        <a class="brand" href="index.html">
+          <div class="brand-logo">
+            <img data-brand="logo" src="assets/images/logo/favicon.png" alt="Logo">
+          </div>
+          <div class="brand-title"><strong>Titik Fiksi</strong></div>
+        </a>
+        <div class="nav-links">
+          <a href="index.html" class="active">Beranda</a>
+          <a href="works.html">Novel</a>
+          <a href="writings.html">Tulisan</a>
+          <a href="contact.html">Kontak</a>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <main class="section">
+    <div class="container">
+      
+      <div class="glass-card" style="padding: 40px 20px; text-align: center;">
+        <h1 id="hero-title" style="font-size: 2.5rem; margin-bottom: 10px;">Titik Fiksi</h1>
+        <p id="hero-subtitle" style="font-size: 1.2rem; color: var(--brand); font-weight: bold; margin-bottom: 20px;">...</p>
+        <p id="hero-intro" style="max-width: 600px; margin: 0 auto; line-height: 1.6; color: var(--text-2);">
+          Website sedang memuat konten...
+        </p>
+
+        <div class="hero-actions">
+          <a href="works.html" class="btn btn-primary">📚 Baca Novel</a>
+          <a href="writings.html" class="btn btn-soft">✍️ Catatan Penulis</a>
+        </div>
+
+        <div id="hero-youtube" class="hero-video-wrap"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner glass-panel">
+        <div>© Titik Fiksi</div>
+        <div style="font-size: 0.9rem; opacity: 0.7;">
+          Professional Web Writer Platform
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/main.js"></script>
+
+  <script>
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on("init", user => {
+        if (!user) {
+          window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
+        }
+      });
+    }
+  </script>
+</body>
+</html>

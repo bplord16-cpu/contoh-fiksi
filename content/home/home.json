@@ -1,0 +1,19 @@
+{
+  "hero": {
+    "title": "Titik Fiksi Universe",
+    "subtitle": "Tempat Imajinasi Menjadi Nyata",
+    "intro": "Selamat datang di website resmi Titik Fiksi.",
+    "youtube_embed": "https://www.youtube.com/watch?v=LXb3EKWsInQ"
+  },
+  "platforms": {
+    "wattpad": "https://wattpad.com",
+    "karyakarsa": "https://karyakarsa.com"
+  },
+  "socials": {
+    "instagram": "https://instagram.com/titikfiksi",
+    "facebook": "https://facebook.com/titikfiksi",
+    "twitter": "https://twitter.com/titikfiksi",
+    "tiktok": "https://tiktok.com/@titikfiksi",
+    "youtube": "https://youtube.com/@titikfiksi"
+  }
+}

@@ -1,0 +1,275 @@
+/* =========================================================
+   TITIK FIKSI — Admin Theme (Glass Premium)
+   File: admin/admin.css
+   ========================================================= */
+
+:root {
+  --bg-1: #f6f7ff;
+  --bg-2: #eef3ff;
+  --bg-3: #ffffff;
+
+  --text-1: #0f172a;
+  --text-2: #334155;
+  --muted: #64748b;
+
+  --glass: rgba(255, 255, 255, 0.55);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --border: rgba(15, 23, 42, 0.10);
+
+  --brand: #3b82f6;
+  --brand-2: #8b5cf6;
+
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+
+  --shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.10);
+  --shadow-card: 0 10px 24px rgba(16, 24, 40, 0.08);
+
+  --blur: 16px;
+}
+
+/* background admin */
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:
+    radial-gradient(900px 600px at 10% 0%, var(--bg-2), transparent 60%),
+    radial-gradient(900px 600px at 90% 10%, rgba(139, 92, 246, 0.20), transparent 55%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-3));
+}
+
+/* =========================================================
+   Decap CMS OVERRIDES (agar tidak terlihat jadul)
+   ========================================================= */
+
+/* Sidebar */
+[class*="SidebarContainer"],
+[class*="Sidebar"] {
+  background: var(--glass) !important;
+  border-right: 1px solid var(--border) !important;
+  backdrop-filter: blur(var(--blur)) !important;
+  -webkit-backdrop-filter: blur(var(--blur)) !important;
+}
+
+/* Top bar / App header */
+[class*="AppHeader"],
+[class*="TopBar"] {
+  background: rgba(255,255,255,0.45) !important;
+  border-bottom: 1px solid var(--border) !important;
+  backdrop-filter: blur(var(--blur)) !important;
+  -webkit-backdrop-filter: blur(var(--blur)) !important;
+}
+
+/* Main content area */
+[class*="Content"],
+[class*="ContentArea"],
+[class*="Main"] {
+  background: transparent !important;
+}
+
+/* Card panels */
+[class*="Card"],
+[class*="CollectionCard"],
+[class*="EntryCard"] {
+  border-radius: var(--radius-xl) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--glass-strong) !important;
+  box-shadow: var(--shadow-card) !important;
+  backdrop-filter: blur(var(--blur)) !important;
+  -webkit-backdrop-filter: blur(var(--blur)) !important;
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+  border-radius: 14px !important;
+  border: 1px solid rgba(15,23,42,0.15) !important;
+  background: rgba(255,255,255,0.78) !important;
+  color: var(--text-1) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(59,130,246,0.65) !important;
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.15) !important;
+}
+
+/* Buttons default */
+button,
+[class*="Button"] {
+  border-radius: 14px !important;
+}
+
+/* Primary button */
+button[class*="primary"],
+[class*="Button"][class*="primary"],
+[class*="ButtonPrimary"] {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.30) !important;
+  box-shadow: 0 10px 24px rgba(59,130,246,0.20) !important;
+}
+
+/* Secondary button */
+button[class*="secondary"],
+[class*="ButtonSecondary"] {
+  background: rgba(255,255,255,0.78) !important;
+  border: 1px solid rgba(15,23,42,0.14) !important;
+  color: var(--text-1) !important;
+}
+
+/* Sidebar menu items */
+a,
+[class*="NavLink"],
+[class*="SidebarLink"] {
+  border-radius: 14px !important;
+}
+
+/* Active item highlight */
+[class*="Active"],
+[class*="selected"] {
+  background: rgba(59,130,246,0.12) !important;
+  border: 1px solid rgba(59,130,246,0.18) !important;
+}
+
+/* Headings */
+h1, h2, h3 {
+  color: var(--text-1) !important;
+  letter-spacing: -0.3px;
+}
+
+/* Muted text */
+small,
+[class*="Hint"],
+[class*="HelpText"] {
+  color: var(--muted) !important;
+}
+
+/* =========================================================
+   Floating Tools (FAB + panel) — agar konsisten
+   ========================================================= */
+.tf-hide { display: none !important; }
+
+.tf-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 99999;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.16);
+  background: rgba(255,255,255,0.78);
+  box-shadow: 0 16px 45px rgba(0,0,0,0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 160ms ease;
+  user-select: none;
+}
+
+.tf-fab:hover { transform: translateY(-2px); }
+
+.tf-fab-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.tf-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 76px;
+  z-index: 99999;
+  width: 260px;
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.14);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 12px;
+}
+
+.tf-panel h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.2px;
+}
+
+.tf-panel p {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  color: rgba(51,65,85,0.9);
+}
+
+.tf-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.tf-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,0.14);
+  background: rgba(255,255,255,0.78);
+  text-decoration: none;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+.tf-btn:hover { transform: translateY(-1px); }
+
+.tf-btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  border-color: rgba(255,255,255,0.35);
+  color: #fff;
+}
+
+.tf-btn-danger {
+  background: rgba(255, 240, 240, 0.85);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #7f1d1d;
+}
+
+.tf-panel-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.72);
+  cursor: pointer;
+  float: right;
+  margin-top: -2px;
+}
+
+.tf-panel-close:hover { transform: translateY(-1px); }
+
+.tf-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  background: rgba(0,0,0,0.10);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
