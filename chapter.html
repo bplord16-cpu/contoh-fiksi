@@ -9,45 +9,47 @@
   <link rel="stylesheet" href="assets/css/style.css" />
 
   <style>
-    .read-area { font-size: 1.15rem; line-height: 1.8; max-width: 720px; margin: 0 auto; color: var(--text-1); }
+    /* 🔥 FIX MODE BACA: Sembunyikan Navbar & Bersihkan Tampilan 🔥 */
+    .navbar-wrap { display: none !important; } /* Menu atas hilang */
+    
+    .read-area { font-size: 1.15rem; line-height: 2; max-width: 720px; margin: 0 auto; color: var(--text-1); text-align: justify; }
     .read-area p { margin-bottom: 24px; }
     
-    /* STYLE LINK BERBAYAR */
+    /* Tombol Kembali Kecil di Atas (Pengganti Navbar) */
+    .back-nav {
+      position: fixed; top: 15px; left: 15px; z-index: 100;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.8); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      backdrop-filter: blur(5px);
+    }
+    .back-nav:hover { transform: scale(1.1); }
+
+    /* LINK BUTTONS */
     .external-links-box { margin: 40px auto 20px; padding: 25px; border-radius: 16px; background: rgba(var(--brand-rgb), 0.05); border: 2px dashed var(--brand); text-align: center; max-width: 600px; }
     .external-links-box p { font-weight: bold; margin-bottom: 16px; color: var(--text-2); }
     .ext-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
     .btn-ext { padding: 12px 20px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 0.95rem; transition: transform 0.2s; color: white; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .btn-ext:hover { transform: translateY(-3px); filter: brightness(1.1); }
+    
     .btn-kk { background: #E22B2D; } 
     .btn-wp { background: #FF6122; } 
     .btn-gn { background: #2D68C4; } 
-    .btn-kbm { background: #00A651; } 
-    .btn-mn { background: #F83A3A; } 
     .btn-custom { background: var(--text-1); }
   </style>
 </head>
 
 <body>
-  <div class="navbar-wrap">
-    <div class="container">
-      <nav class="navbar glass-panel">
-        <a class="brand" href="index.html">
-          <div class="brand-logo">
-            <img data-brand="logo" src="assets/images/logo/favicon.png" alt="Logo">
-          </div>
-          <div class="brand-title"><strong>Titik Fiksi</strong></div>
-        </a>
-        <div class="nav-links"><a href="works.html">Kembali ke Novel</a></div>
-      </nav>
-    </div>
-  </div>
+  <a id="btn-back-novel" href="#" class="back-nav" title="Kembali ke Daftar Isi">⬅️</a>
 
-  <main class="section">
+  <main class="section" style="padding-top: 20px;">
     <div class="container">
-      <div class="glass-card" style="padding: 30px; min-height: 80vh;">
-        <div style="text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px;">
-          <span id="chapter-top" style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: var(--muted);">CHAPTER</span>
-          <h1 id="chapter-title" style="margin: 5px 0 0;">Memuat...</h1>
+      <div class="glass-card" style="padding: 30px; min-height: 80vh; max-width: 800px; margin: 0 auto;">
+        
+        <div style="text-align: center; margin-bottom: 40px; border-bottom: 1px solid var(--border); padding-bottom: 20px;">
+          <span id="chapter-top" style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; color: var(--brand); font-weight:bold;">CHAPTER</span>
+          <h1 id="chapter-title" style="margin: 10px 0 0; font-family:serif;">Memuat...</h1>
         </div>
 
         <article id="chapter-content" class="read-area">
@@ -56,14 +58,15 @@
 
         <div id="chapter-external-links"></div>
 
-        <div style="margin-top: 40px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 20px;">
+        <div style="margin-top: 50px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 30px;">
           <a id="btn-prev" href="#" class="btn btn-soft" style="display: none;">⬅️ Sebelumnya</a>
-          <a id="btn-back-novel" href="#" class="btn btn-soft">Daftar Isi</a>
           <a id="btn-next" href="#" class="btn btn-primary" style="display: none;">Selanjutnya ➜</a>
         </div>
+
       </div>
     </div>
   </main>
+
   <script src="assets/js/theme.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
