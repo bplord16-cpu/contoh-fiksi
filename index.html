@@ -3,35 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Titik Fiksi | Website Resmi</title>
-  
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
+  <title>Beranda | Titik Fiksi</title>
   <link rel="stylesheet" href="assets/css/themes.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
-  
-  <style>
-    /* Style Tambahan untuk Hero Video */
-    .hero-video-wrap {
-      margin-top: 25px;
-      position: relative;
-      padding-bottom: 56.25%; /* Rasio 16:9 */
-      height: 0;
-      overflow: hidden;
-      border-radius: 16px;
-      box-shadow: var(--shadow-soft);
-      display: none; /* Sembunyi kalau tidak ada link */
-      background: #000;
-    }
-    .hero-video-wrap iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-    .hero-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
-  </style>
 </head>
 
 <body>
@@ -42,45 +16,77 @@
           <div class="brand-logo">
             <img data-brand="logo" src="assets/images/logo/favicon.png" alt="Logo">
           </div>
-          <div class="brand-title"><strong>Titik Fiksi</strong></div>
+          <div class="brand-title">
+            <strong>Titik Fiksi</strong>
+            <span>Official Website</span>
+          </div>
         </a>
+
         <div class="nav-links">
-          <a href="index.html" class="active">Beranda</a>
+          <a class="active" href="index.html">Beranda</a>
           <a href="works.html">Novel</a>
           <a href="writings.html">Tulisan</a>
           <a href="contact.html">Kontak</a>
+        </div>
+
+        <div class="nav-actions">
+          <button id="theme-toggle" class="theme-btn" type="button">
+            <span class="theme-dot"></span>
+            <span id="theme-label">Pearl Sky</span>
+          </button>
         </div>
       </nav>
     </div>
   </div>
 
-  <main class="section">
+  <main class="section hero">
     <div class="container">
-      
-      <div class="glass-card" style="padding: 40px 20px; text-align: center;">
-        <h1 id="hero-title" style="font-size: 2.5rem; margin-bottom: 10px;">Titik Fiksi</h1>
-        <p id="hero-subtitle" style="font-size: 1.2rem; color: var(--brand); font-weight: bold; margin-bottom: 20px;">...</p>
-        <p id="hero-intro" style="max-width: 600px; margin: 0 auto; line-height: 1.6; color: var(--text-2);">
-          Website sedang memuat konten...
-        </p>
+      <div class="glass-card hero-inner">
+        <div>
+          <h1 id="hero-title">Memuat...</h1>
+          <div id="hero-subtitle" class="hero-subtitle">...</div>
+          <p id="hero-intro">...</p>
+          
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="works.html">📚 Baca Novel</a>
+            <a class="btn btn-soft" href="contact.html">📩 Kontak</a>
+          </div>
 
-        <div class="hero-actions">
-          <a href="works.html" class="btn btn-primary">📚 Baca Novel</a>
-          <a href="writings.html" class="btn btn-soft">✍️ Catatan Penulis</a>
+          <div id="hero-youtube" style="margin-top: 24px; border-radius: 16px; overflow: hidden; display: none; aspect-ratio: 16/9;"></div>
+          
+          <div style="margin-top: 20px;">
+             <small style="color:var(--muted); font-weight:bold;">IKUTI KARYA SAYA DI:</small>
+             <div class="platform-grid"></div>
+          </div>
         </div>
 
-        <div id="hero-youtube" class="hero-video-wrap"></div>
+        <div class="hero-side">
+          <div class="glass-panel mini-card" style="background: rgba(255,255,255,0.4);">
+            <div class="mini-card-title">📢 Papan Pengumuman</div>
+            <div id="home-featured-container" class="mini-card-desc">
+              <p>Belum ada pengumuman terbaru.</p>
+            </div>
+          </div>
+          
+          <div class="glass-panel mini-card">
+            <div class="mini-card-title">✨ Update Terbaru</div>
+            <div class="mini-card-desc">
+              Cek menu <b>Novel</b> untuk melihat update bab terbaru, atau menu <b>Tulisan</b> untuk catatan harian.
+            </div>
+          </div>
+        </div>
       </div>
-
     </div>
   </main>
 
   <footer class="footer">
     <div class="container">
       <div class="footer-inner glass-panel">
-        <div>© Titik Fiksi</div>
-        <div style="font-size: 0.9rem; opacity: 0.7;">
-          Professional Web Writer Platform
+        <div>© <span id="yearNow"></span> Titik Fiksi</div>
+        <div style="display:flex; gap:10px;">
+          <a href="works.html">Novel</a>
+          <a href="writings.html">Tulisan</a>
+          <a href="contact.html">Kontak</a>
         </div>
       </div>
     </div>
@@ -88,15 +94,8 @@
 
   <script src="assets/js/theme.js"></script>
   <script src="assets/js/main.js"></script>
-
   <script>
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", user => {
-        if (!user) {
-          window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; });
-        }
-      });
-    }
+    document.getElementById("yearNow").textContent = new Date().getFullYear();
   </script>
 </body>
 </html>

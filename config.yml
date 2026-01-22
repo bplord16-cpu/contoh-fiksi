@@ -1,0 +1,155 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "assets/images/uploads"
+public_folder: "/assets/images/uploads"
+
+site_url: "https://contohfiksi.netlify.app"
+display_url: "https://contohfiksi.netlify.app"
+locale: "id"
+
+slug:
+  encoding: "ascii"
+  clean_accents: true
+  sanitize_replacement: "-"
+
+collections:
+  # 1. PENGATURAN & BERANDA
+  - name: "settings_collection"
+    label: "⚙️ Pengaturan & Beranda"
+    files:
+      - label: "Halaman Beranda"
+        name: "home"
+        file: "content/home/home.json"
+        format: "json"
+        fields:
+          - label: "HERO SECTION"
+            name: "hero"
+            widget: "object"
+            fields:
+              - { label: "Judul Besar", name: "title", widget: "string" }
+              - { label: "Sub Judul", name: "subtitle", widget: "string", required: false }
+              - { label: "Intro Text", name: "intro", widget: "text", required: false }
+              - { label: "Youtube URL", name: "youtube_embed", widget: "string", required: false }
+          
+          - label: "LINK PLATFORM (Beranda)"
+            name: "platforms"
+            widget: "object"
+            hint: "Isi link profil Anda. Kosongkan jika tidak punya."
+            fields:
+              - { label: "Wattpad", name: "wattpad", widget: "string", required: false }
+              - { label: "Karyakarsa", name: "karyakarsa", widget: "string", required: false }
+              - { label: "GoodNovel", name: "goodnovel", widget: "string", required: false }
+              - { label: "Fizzo", name: "fizzo", widget: "string", required: false }
+
+          - label: "SOSIAL MEDIA (Kontak & Footer)"
+            name: "socials"
+            widget: "object"
+            fields:
+              - { label: "Instagram", name: "instagram", widget: "string", required: false }
+              - { label: "Facebook", name: "facebook", widget: "string", required: false }
+              - { label: "Twitter", name: "twitter", widget: "string", required: false }
+              - { label: "TikTok", name: "tiktok", widget: "string", required: false }
+              - { label: "YouTube", name: "youtube", widget: "string", required: false }
+
+      - label: "Pengaturan Umum (Logo & Nama)"
+        name: "settings"
+        file: "content/settings/settings_general.json"
+        format: "json"
+        fields:
+          - { label: "Nama Website", name: "site_title", widget: "string" }
+          - { label: "Deskripsi SEO", name: "meta_description", widget: "text", required: false }
+          - { label: "Logo Website", name: "brand_logo", widget: "image", required: false, hint: "⚠️ WAJIB: Gunakan format PNG Transparan. Ukuran rekomen: 100x100px. Max: 200KB." }
+          - { label: "Favicon", name: "brand_favicon", widget: "image", required: false, hint: "Icon kecil di tab browser. Ukuran: 32x32px." }
+
+  # 2. DAFTAR NOVEL (WORKS)
+  - name: "works"
+    label: "📚 Daftar Novel"
+    files:
+      - label: "Database Novel"
+        name: "works_list"
+        file: "content/works/works.json"
+        format: "json"
+        fields:
+          - label: "List Novel"
+            name: "works"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "Judul Novel", name: "title", widget: "string" }
+              - { label: "Slug URL", name: "slug", widget: "string", hint: "Huruf kecil & strip (contoh: naga-terbang)" }
+              - { label: "Cover Gambar", name: "cover", widget: "image", required: false, hint: "⚠️ PENTING: Gunakan gambar Portrait (tegak). Ukuran rekomen: 600x900px. Kompres dulu di tinypng.com agar ringan (Max 500KB)." }
+              - { label: "Genre", name: "genre", widget: "string" }
+              - { label: "Status", name: "status", widget: "select", options: ["Ongoing", "Completed", "Hiatus", "Coming Soon"] }
+              - { label: "Sinopsis", name: "synopsis", widget: "text" }
+
+  # 3. MANAJEMEN BAB
+  - name: "chapters"
+    label: "📖 Manajemen Bab"
+    folder: "content/chapters"
+    create: true
+    extension: "json"
+    format: "json"
+    slug: "{{novel_slug}}-{{code}}"
+    summary: "{{novel_slug}} - Ch.{{code}}: {{title}}"
+    fields:
+      - label: "Slug Novel (WAJIB SAMA)"
+        name: "novel_slug"
+        widget: "string"
+        hint: "Harus persis dengan slug di menu Daftar Novel"
+      
+      - label: "Nomor Bab (Angka)"
+        name: "code"
+        widget: "string"
+        pattern: ['^[0-9]+$', "Hanya angka"]
+        hint: "Gunakan angka 01, 02, dst agar urutan rapi."
+      
+      - label: "Judul Bab"
+        name: "title"
+        widget: "string"
+      
+      - label: "Tanggal Publish"
+        name: "date"
+        widget: "datetime"
+        format: "YYYY-MM-DD"
+      
+      - label: "Tampilkan?"
+        name: "published"
+        widget: "boolean"
+        default: true
+      
+      - label: "Isi Cerita"
+        name: "content"
+        widget: "markdown"
+
+      - label: "Link Baca Lanjutan (Opsional)"
+        name: "external_links"
+        widget: "object"
+        collapsed: false
+        fields:
+          - { label: "Link Karyakarsa", name: "karyakarsa", widget: "string", required: false }
+          - { label: "Link Wattpad", name: "wattpad", widget: "string", required: false }
+          - { label: "Link GoodNovel", name: "goodnovel", widget: "string", required: false }
+          - { label: "Link Custom", name: "custom_url", widget: "string", required: false }
+          - { label: "Teks Tombol Custom", name: "custom_text", widget: "string", required: false }
+
+  # 4. TULISAN (WRITINGS)
+  - name: "writings"
+    label: "✍️ Tulisan & Blog"
+    files:
+      - label: "Database Tulisan"
+        name: "writings_list"
+        file: "content/writings/writings.json"
+        format: "json"
+        fields:
+          - label: "List Tulisan"
+            name: "writings"
+            widget: "list"
+            fields:
+              - { label: "Judul", name: "title", widget: "string" }
+              - { label: "Slug", name: "slug", widget: "string" }
+              - { label: "Kategori", name: "category", widget: "string", required: false }
+              - { label: "Tampilkan di Beranda?", name: "featured", widget: "boolean", default: false, hint: "Aktifkan ini jika ingin tulisan muncul di halaman depan (sebagai pengumuman/headline)." }
+              - { label: "Tanggal", name: "date", widget: "datetime", format: "YYYY-MM-DD", required: false }
+              - { label: "Isi Tulisan", name: "content", widget: "markdown", required: false }
